@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.dependecies.dependecies import AdminServiceDependency
-from app.schemas.UserSchema import UserCreate, UserUpdate
+from app.schemas.UserSchema import RegisterUser, UserUpdate
 from app.services.admin_service import AdminService
 
 router = APIRouter(prefix="/users")
@@ -14,7 +14,7 @@ async def get_user(admin_service: AdminService = AdminServiceDependency):
 
 @router.post("")
 async def create_user(
-        userdata: UserCreate,
+        userdata: RegisterUser,
         admin_service: AdminService = AdminServiceDependency,
 ):
     return await admin_service.create_user(userdata)

@@ -3,9 +3,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
-from app.models.User.model import User
-from app.schemas.UserSchema import UserCreate
-from app.utils.password.functions import get_password_hash
+from app.models.User.model import User, UserStatus
+from app.schemas.UserSchema import RegisterUser
+from app.utils.password.functions import get_password_hash, verify_password
 
 
 class AdminCRUD:
@@ -24,7 +24,9 @@ class AdminCRUD:
         result = await self.db.execute(query)
         if result.scalars().first():
             fields_str = ', '.join(f"{key}='{value}'" for key, value in kwargs.items())
-            raise HTTPException(status_code=409, detail=f"User with {fields_str} already exists")
+            raise HTTPException(
+                status_code=409, detail=f"User with {fields_str} already exists"
+            )
 
     async def get_user_by_id(self, user_id: int):
         user = await self.db.execute(select(User).where(User.id == user_id))
@@ -37,7 +39,10 @@ class AdminCRUD:
         ]
         if same_fields:
             fields_str = ', '.join(same_fields)
-            raise HTTPException(status_code=409, detail=f"New values for {fields_str} match the current ones")
+            raise HTTPException(
+                status_code=409,
+                detail=f"New values for {fields_str} match the current ones"
+            )
 
         await self._check_unique_fields(exclude_user_id=user.id, **fields_to_update)
 
@@ -53,36 +58,39 @@ class AdminCRUD:
                 detail="User not found"
             )
 
-        if new_password != db_user.password:
-            db_user.password = get_password_hash(new_password)
-            return db_user
+        if verify_password(new_password, db_user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="You can't change the password to the one you have"
+            )
 
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="You can't change the password to the one you have"
-        )
+        db_user.hashed_password = get_password_hash(new_password)
+        return db_user
 
     async def get_users(self):
         users = await self.db.execute(select(User))
         return users.scalars().all()
 
-    async def create_user(self, userdata: UserCreate):
+    async def create_user(self, userdata: RegisterUser):
         try:
             if not userdata:
-                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="No userdata")
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT, detail="No userdata"
+                )
 
             new_user = User(
-                nick_name=userdata.nick_name,
-                password=get_password_hash(userdata.password),
+                nickname=userdata.nickname,
+                hashed_password=get_password_hash(userdata.password),
                 role=userdata.role,
+                status=UserStatus.pending,
                 full_name=userdata.full_name,
-                description_from_admin=userdata.description_from_admin,
+                admin_note=userdata.admin_note,
 
             )
 
             self.db.add(new_user)
             await self.db.commit()
-            await self.db.refresh(userdata)
+            await self.db.refresh(new_user)
 
             return new_user
         except Exception as e:
@@ -93,16 +101,20 @@ class AdminCRUD:
 
     async def delete_user(self, user_id: int):
         try:
-            user = await self.db.execute(select(User).where(User.id == user_id))
-            user = user.scalars().first()
+            result = await self.db.execute(select(User).where(User.id == user_id))
+            user = result.scalar_one_or_none()
 
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            # Удаляем пользователя
             await self.db.delete(user)
-
             await self.db.commit()
-            await self.db.refresh(user)
 
             return {"success": True}
+
         except Exception as e:
+            await self.db.rollback()  # важно при ошибках
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Internal server error: {e}"
