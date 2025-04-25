@@ -2,15 +2,15 @@ from datetime import datetime
 from typing import Optional
 
 from asyncpg.pgproto.pgproto import timedelta
-from jose import jwt, JWTError
+from jose import JWTError, jwt
 
-from app.core.config import Settings
+from app.core.config import settings
 
-SECRET_KEY = Settings.SECRET_KEY
+SECRET_KEY = settings.SECRET_KEY
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
-ACTIVATE_TOKEN_EXPIRE_DAYS = 7
-ALGORITHM = Settings.ALGORITHM
+INVITE_TOKEN_EXPIRE_DAYS = 7
+ALGORITHM = settings.ALGORITHM
 
 token_blacklist = set()
 
@@ -24,21 +24,29 @@ def decode_token(token: str):
         raise JWTError(f"Invalid token: {e}")
 
 
-def create_activate_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_invite_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
+
+    # sub должна быть строка, потом нужно будет переводить в инт если буду работать с
+    # базой
+    to_encode["sub"] = str(to_encode["sub"])
 
     if expires_delta:
         expire = datetime.now() + expires_delta
     else:
-        expire = datetime.now() + timedelta(days=ACTIVATE_TOKEN_EXPIRE_DAYS)
+        expire = datetime.now() + timedelta(days=INVITE_TOKEN_EXPIRE_DAYS)
 
-    to_encode.update({"exp": expire, "type": "activate"})
+    to_encode.update({"exp": expire, "type": "invite"})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
+
+    # sub должна быть строка, потом нужно будет переводить в инт если буду работать с
+    # базой
+    to_encode["sub"] = str(to_encode["sub"])
 
     if expires_delta:
         expire = datetime.now() + expires_delta
@@ -53,6 +61,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
 
+    # sub должна быть строка, потом нужно будет переводить в инт если буду работать с
+    # базой
+    to_encode["sub"] = str(to_encode["sub"])
+    
     if expires_delta:
         expire = datetime.now() + expires_delta
     else:

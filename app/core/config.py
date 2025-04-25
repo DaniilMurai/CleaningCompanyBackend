@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
+    FRONTEND_URL: str
 
     class Config:
         env_file = ".env"

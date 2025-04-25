@@ -1,11 +1,7 @@
 import enum
 from datetime import datetime
-from uuid import uuid4
 
-from sqlalchemy import (
-    Column, String, Enum as SQLEnum, DateTime
-)
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import (Column, DateTime, Enum as SQLEnum, Integer, String)
 
 from app.db.base import Base
 
@@ -16,13 +12,20 @@ class Role(enum.Enum):
     superadmin = "superadmin"
 
 
+class UserStatus(enum.Enum):
+    pending = "pending"
+    active = "active"
+    disabled = "disabled"
+
+
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    nick_name = Column(String, nullable=False)
+    id: int = Column(Integer, primary_key=True, autoincrement=True)
+    nickname = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
     role = Column(SQLEnum(Role), default=Role.employee, nullable=False)
+    status = Column(SQLEnum(UserStatus), default=UserStatus.pending, nullable=False)
     full_name = Column(String)
-    description_from_admin = Column(String)
+    admin_note = Column(String)
     created_at = Column(DateTime, default=datetime.now())

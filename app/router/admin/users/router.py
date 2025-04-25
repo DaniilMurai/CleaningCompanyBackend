@@ -1,32 +1,37 @@
-from typing import Literal
-
-from fastapi import APIRouter, Query
+from fastapi import APIRouter
 
 from app.dependecies.dependecies import AdminServiceDependency
+from app.schemas.UserSchema import RegisterUser, UserUpdate
 from app.services.admin_service import AdminService
 
 router = APIRouter(prefix="/users")
 
 
 @router.get("")
-async def get_user(
-        search_by: Literal[
-            "id", "nick_name", "role", "full_name", "description_from_admin", "created_at"
-        ] = Query(None),
-        admin_service: AdminService = AdminServiceDependency):
-    return await admin_service.get_users(search_by)
+async def get_user(admin_service: AdminService = AdminServiceDependency):
+    return await admin_service.get_users()
 
 
 @router.post("")
-async def create_user():
-    return "user created"
+async def create_user(
+        userdata: RegisterUser,
+        admin_service: AdminService = AdminServiceDependency,
+):
+    return await admin_service.create_user(userdata)
 
 
 @router.patch("")
-async def edit_user():
-    return "user edited"
+async def edit_user(
+        user_id: int,
+        userdata: UserUpdate,
+        admin_service: AdminService = AdminServiceDependency
+):
+    return await admin_service.edit_user(user_id, userdata)
 
 
 @router.delete("")
-async def delete_user():
-    return "user deleted"
+async def delete_user(
+        user_id: int,
+        admin_service: AdminService = AdminServiceDependency
+):
+    return await admin_service.delete_user(user_id)
