@@ -24,12 +24,12 @@ class UserRead(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserUpdate(BaseModel):
     nick_name: Optional[str] = Field(None, min_length=2, max_length=50)
     password: Optional[str] = Field(None, min_length=8)
-    Role: Optional[str] = None
+    role: Optional[str] = None
     full_name: Optional[str] = None
     description_from_admin: Optional[str] = None
