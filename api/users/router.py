@@ -3,7 +3,7 @@ from fastapi.params import Depends
 
 import schemas
 from api.users.service import UsersService
-from schemas import UserUpdatePassword
+from schemas import UserUpdatePassword, UserdataUpdate
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -19,3 +19,11 @@ async def change_password(
         service: UsersService = Depends()
 ) -> schemas.SuccessResponse:
     return await service.change_password(data)
+
+
+@router.post("/change_userdata")
+async def change_userdata(
+        data: UserdataUpdate,
+        service: UsersService = Depends()
+) -> schemas.SuccessResponse:
+    return await service.change_userdata(data)

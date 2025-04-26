@@ -28,7 +28,7 @@ class UserCRUD(BaseModelCrud[User]):
     async def validate_nickname(
             self, nickname: str | None,
             exclude_user_id: int | None = None,
-    ):
+    ) -> str:
         if not nickname:
             raise exceptions.NicknameCannotBeEmptyError()
 

@@ -33,3 +33,8 @@ class UserSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UserdataUpdate(BaseModel):
+    nickname: Optional[str]
+    full_name: Optional[str]
