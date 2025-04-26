@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -9,8 +9,10 @@ class LoginData(BaseModel):
 
 
 class ActivateUserData(BaseModel):
-    token: str
+    nickname: str
     password: str
+    full_name: Optional[str] = None
+    token: str
 
 
 class TokenPair(BaseModel):

@@ -19,10 +19,8 @@ class UserStatus(enum.Enum):
 
 # 📥 Используется ТОЛЬКО при регистрации
 class RegisterUserData(BaseModel):
-    nickname: str = Field(min_length=2, max_length=50)
-    password: str = Field(min_length=8)  # обычный пароль
+    full_name: str
     role: Optional[UserRole] = UserRole.employee
-    full_name: Optional[str] = None
     admin_note: Optional[str] = None
 
 

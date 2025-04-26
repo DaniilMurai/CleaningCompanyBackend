@@ -7,6 +7,7 @@ import schemas
 from api.admin.base.service import AdminUserDepend
 from config import settings
 from db.crud import AdminUsersCRUD
+from schemas import UserRole
 from utils.security.tokens import create_invite_token
 
 
@@ -19,11 +20,20 @@ class AdminUsersService:
         self.admin = admin
         self.crud: AdminUsersCRUD = crud
 
+    def check_access_to_role(self, role: schemas.UserRole):
+        if role == schemas.UserRole.superadmin:
+            raise exceptions.CreateUserWithRoleForbiddenError(role)
+        if self.admin.role == schemas.UserRole.admin and role == UserRole.admin:
+            raise exceptions.CreateUserWithRoleForbiddenError(role)
+
     async def get_users(self, params: schemas.GetUsersParams | None = None):
         kwargs = params.model_dump(exclude_none=True) if params else {}
         return await self.crud.get_list(**kwargs)
 
     async def create_user(self, userdata: schemas.RegisterUserData):
+        
+        self.check_access_to_role(userdata.role)
+
         async with self.crud.db.begin():
             user = await self.crud.create(
                 **userdata.model_dump(exclude_unset=True),
