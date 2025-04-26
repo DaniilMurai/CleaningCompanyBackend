@@ -30,16 +30,16 @@ class AdminUsersService:
         kwargs = params.model_dump(exclude_none=True) if params else {}
         return await self.crud.get_list(**kwargs)
 
-    async def create_user(self, userdata: schemas.RegisterUserData):
-
-        self.check_access_to_role(userdata.role)
+    async def create_user(self, data: schemas.RegisterUserData):
+        self.check_access_to_role(data.role)
 
         async with self.crud.db.begin():
             user = await self.crud.create(
-                **userdata.model_dump(exclude_unset=True),
+                **data.model_dump(exclude_unset=True),
                 status=schemas.UserStatus.pending,
             )
         await self.crud.db.refresh(user)
+
         token = create_invite_token({"sub": user.id, "type": "invite"})
         return {"invite_link": f"{settings.FRONTEND_URL}/activate?token={token}"}
 
