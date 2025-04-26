@@ -173,7 +173,7 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-.idea/
+.idea/*
 alembic/versions/
 logs
 

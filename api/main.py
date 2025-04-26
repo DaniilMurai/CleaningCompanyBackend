@@ -8,6 +8,7 @@ from db.models import create_tables
 from loggers.setup import setup_logger
 from utils.api import setup_uvicorn_loggers
 from . import admin, auth
+from .base.exception_handlers import register_general_exception_handlers
 
 
 @asynccontextmanager
@@ -33,6 +34,8 @@ app = FastAPI(
 
 app.mount("/auth", auth.app)
 app.mount("/admin", admin.app)
+
+register_general_exception_handlers(app)
 
 
 @app.get("/")

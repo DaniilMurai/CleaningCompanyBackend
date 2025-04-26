@@ -1,18 +1,22 @@
-import logging
+import http
 import sys
 import traceback
 from functools import wraps
 from typing import Awaitable, Callable
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.exceptions import RequestValidationError
+from fastapi.utils import is_body_allowed_for_status_code
+from starlette import status
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import JSONResponse, Response
 
 from config import settings
 from exceptions import APIException
+from loggers import JSONLogger
 from utils.api import parse_accept_language
 
-logger = logging.getLogger()
+logger = JSONLogger()
 
 
 def api_error_handler(func) -> Callable[[Request, Exception], Awaitable[Response]]:
@@ -28,27 +32,24 @@ def api_error_handler(func) -> Callable[[Request, Exception], Awaitable[Response
 
 
 @api_error_handler
-async def error_with_text_variable_handler(
+async def api_exception_handler(
         request: Request, error: APIException
 ):
-
     lang = parse_accept_language(
         request.headers.get("Accept-Language", settings.DEFAULT_LANG)
     )
 
     status_code = error.status_code
-    detail_data = {
-        "detail": error.message,
-    }
-    if error.data:
-        detail_data.update(error.data)
+    detail_text = error.message
+    detail_data = error.data
 
-    if LOG_ERRORS_IN_API_EXCEPTION_HANDLERS:
-        logger.error(
-            error, {
-                "detail_text": detail_text,
-            }
-        )
+    logger.error(
+        error, {
+            "detail_text": detail_text,
+            "detail_data": detail_data,
+            "lang": lang,
+        }
+    )
 
     headers = getattr(error, "headers", None)
     if not is_body_allowed_for_status_code(status_code):
@@ -67,8 +68,7 @@ async def error_with_text_variable_handler(
 
 @api_error_handler
 async def http_exception_handler(_: Request, error: HTTPException):
-    if LOG_ERRORS_IN_API_EXCEPTION_HANDLERS:
-        logger.error(error)
+    logger.error(error)
 
     headers = getattr(error, "headers", None)
     if not is_body_allowed_for_status_code(error.status_code):
@@ -81,8 +81,7 @@ async def http_exception_handler(_: Request, error: HTTPException):
 
 @api_error_handler
 async def request_validation_error(_: Request, error: RequestValidationError):
-    if LOG_ERRORS_IN_API_EXCEPTION_HANDLERS:
-        logger.error(error)
+    logger.error(error)
 
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -92,8 +91,7 @@ async def request_validation_error(_: Request, error: RequestValidationError):
 
 @api_error_handler
 async def unhandled_exception_handler(_: Request, error: Exception):
-    if LOG_ERRORS_IN_API_EXCEPTION_HANDLERS:
-        logger.error(error)
+    logger.error(error)
 
     detail = http.HTTPStatus(500).phrase
     return JSONResponse(
@@ -103,4 +101,7 @@ async def unhandled_exception_handler(_: Request, error: Exception):
 
 
 def register_general_exception_handlers(app: FastAPI):
-    pass
+    app.add_exception_handler(APIException, api_exception_handler)
+    app.add_exception_handler(HTTPException, http_exception_handler)
+    app.add_exception_handler(RequestValidationError, request_validation_error)
+    app.add_exception_handler(Exception, unhandled_exception_handler)
