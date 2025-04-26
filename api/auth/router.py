@@ -16,10 +16,10 @@ async def login(
 
 @router.post("/activate")
 async def activate(
-        request: schemas.ActivateUserData,
+        data: schemas.ActivateUserData,
         service: AuthService = Depends()
 ) -> schemas.TokenPair:
-    return await service.activate(request)
+    return await service.activate(data)
 
 
 @router.post("/refresh_tokens")

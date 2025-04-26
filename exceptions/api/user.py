@@ -1,5 +1,6 @@
 from starlette import status
 
+import schemas
 from exceptions.api.base import APIException
 
 
@@ -15,3 +16,12 @@ class NicknameAlreadyExists(APIException):
         self.message = f"User with nickname {nickname} already exists."
         self.nickname = nickname
         self.data = {"nickname": nickname}
+
+
+class CreateUserWithRoleForbiddenError(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+
+    def __init__(self, role: schemas.UserRole):
+        self.message = f"You cannot create user with role: {role.value}"
+        self.role = role
+        self.data = {"role": role.value}

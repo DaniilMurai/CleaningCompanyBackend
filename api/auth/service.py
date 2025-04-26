@@ -21,7 +21,7 @@ class AuthService:
     @classmethod
     def get_tokens_pair(cls, user: User):
         access = create_access_token(
-            data={"sub": str(user.id), "role": user.role.value, "type": "access"}
+            data={"sub": str(user.id), "type": "access"}
         )
         refresh = create_refresh_token(data={"sub": str(user.id), "type": "refresh"})
 
@@ -43,9 +43,9 @@ class AuthService:
 
         return self.get_tokens_pair(user)
 
-    async def activate(self, request: schemas.ActivateUserData):
+    async def activate(self, data: schemas.ActivateUserData):
         try:
-            payload = decode_token(request.token)
+            payload = decode_token(data.token)
             if payload.get("type") != "invite":
                 raise JWTError()
             user_id = int(payload["sub"])
@@ -63,14 +63,11 @@ class AuthService:
                 detail="Invite not found or already activated"
             )
 
-        if not verify_password(request.password, user.hashed_password):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Wrong password"
+        async with self.crud.db.begin():
+            await self.crud.update(
+                user, data.model_dump(exclude={"token"}, exclude_none=True),
+                status=schemas.UserStatus.active
             )
-
-        user.status = schemas.UserStatus.active
-        await self.crud.db.commit()
 
         return self.get_tokens_pair(user)
 
