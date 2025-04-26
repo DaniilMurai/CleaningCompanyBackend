@@ -1,6 +1,6 @@
-from typing import Any, Generic, Type, TypeVar
+from typing import Any, Generic, List, Type, TypeVar
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 
 import exceptions
 from db.base import Base
@@ -11,6 +11,7 @@ T = TypeVar("T", bound=Base)
 
 class BaseModelCrud(CRUD, Generic[T]):
     model: Type[Base]
+    search_fields: tuple[str, ...] | None = None
 
     @classmethod
     def get_statement(cls, **kwargs):
@@ -32,6 +33,42 @@ class BaseModelCrud(CRUD, Generic[T]):
 
         stmt = self.get_statement(**kwargs)
         return await self.db.scalar(stmt)
+
+    async def get_list(
+            self, *,
+            search: str | None = None,
+            order_by: Any | tuple[Any, ...] | None = None,
+            offset: int | None = None,
+            limit: int | None = None,
+            **kwargs,
+    ) -> List[T]:
+        stmt = self.get_statement(**kwargs)
+        if search:
+            if not self.search_fields:
+                raise ValueError("search_fields is required for search to work")
+
+            stmt = stmt.where(
+                or_(
+                    *[
+                        getattr(self.model, field).contains(search)
+                        for field in self.search_fields
+                    ]
+                )
+            )
+
+        if order_by:
+            if isinstance(order_by, tuple):
+                stmt = stmt.order_by(*order_by)
+            else:
+                stmt = stmt.order_by(order_by)
+
+        if offset:
+            stmt = stmt.offset(offset)
+        if limit:
+            stmt = stmt.limit(limit)
+
+        result = await self.db.scalars(stmt)
+        return result.all()
 
     async def pre_process_update_data(self, data: dict) -> dict:
         return data

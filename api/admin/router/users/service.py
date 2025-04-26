@@ -19,8 +19,9 @@ class AdminUsersService:
         self.admin = admin
         self.crud: AdminUsersCRUD = crud
 
-    async def get_users(self):
-        return await self.crud.get_users()
+    async def get_users(self, params: schemas.GetUsersParams | None = None):
+        kwargs = params.model_dump(exclude_none=True) if params else {}
+        return await self.crud.get_list(**kwargs)
 
     async def create_user(self, userdata: schemas.RegisterUserData):
         async with self.crud.db.begin():

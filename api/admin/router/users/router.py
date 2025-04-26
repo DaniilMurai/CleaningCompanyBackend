@@ -1,5 +1,7 @@
+from typing import Annotated
+
 from fastapi import APIRouter
-from fastapi.params import Depends
+from fastapi.params import Depends, Query
 
 import schemas
 from api.admin.router.users.service import AdminUsersService
@@ -8,8 +10,11 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.get("/")
-async def get_users(admin_service: AdminUsersService = Depends()):
-    return await admin_service.get_users()
+async def get_users(
+        params: Annotated[schemas.GetUsersParams, Query()],
+        admin_service: AdminUsersService = Depends(),
+):
+    return await admin_service.get_users(params)
 
 
 @router.post("/")

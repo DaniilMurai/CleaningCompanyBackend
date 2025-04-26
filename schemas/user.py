@@ -56,3 +56,12 @@ class UserUpdateData(BaseModel):
     status: Optional[UserStatus] = None
     full_name: Optional[str] = None
     admin_note: Optional[str] = None
+
+
+class GetUsersParams(BaseModel):
+    role: UserRole | None = None
+    status: UserStatus | None = None
+    nickname: str | None = None
+    search: str | None = None
+    offset: int | None = None
+    limit: int | None = None

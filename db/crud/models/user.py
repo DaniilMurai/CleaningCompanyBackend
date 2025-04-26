@@ -8,6 +8,7 @@ from ...models import User
 
 class UserCRUD(BaseModelCrud[User]):
     model = User
+    search_fields = ("nickname", "full_name", "admin_note")
 
     async def pre_process_data(self, data: dict) -> dict:
         if "nickname" in data:
