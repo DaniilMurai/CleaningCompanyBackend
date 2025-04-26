@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from db.models import create_tables
-from . import admin, auth
+from . import admin, auth, users
 
 
 @asynccontextmanager
@@ -19,6 +19,7 @@ app = FastAPI(
 
 app.mount("/auth", auth.app)
 app.mount("/admin", admin.app)
+app.mount("/users", users.app)
 
 
 @app.get("/")

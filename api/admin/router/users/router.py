@@ -13,7 +13,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 async def get_users(
         params: Annotated[schemas.GetUsersParams, Query()],
         admin_service: AdminUsersService = Depends(),
-):
+) -> list[schemas.UserSchema]:
     return await admin_service.get_users(params)
 
 

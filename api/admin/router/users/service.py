@@ -31,7 +31,7 @@ class AdminUsersService:
         return await self.crud.get_list(**kwargs)
 
     async def create_user(self, userdata: schemas.RegisterUserData):
-        
+
         self.check_access_to_role(userdata.role)
 
         async with self.crud.db.begin():

@@ -25,3 +25,12 @@ class CreateUserWithRoleForbiddenError(APIException):
         self.message = f"You cannot create user with role: {role.value}"
         self.role = role
         self.data = {"role": role.value}
+
+
+class WrongPassword(APIException):
+    status_code = status.HTTP_409_CONFLICT
+
+    def __init__(self, password: str):
+        self.message = f"Password {password} is not correct."
+        self.nickname = password
+        self.data = {"password": password}
