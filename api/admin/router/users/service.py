@@ -23,10 +23,10 @@ class AdminUsersService:
         kwargs = params.model_dump(exclude_none=True) if params else {}
         return await self.crud.get_list(**kwargs)
 
-    async def create_user(self, userdata: schemas.RegisterUserData):
+    async def create_user(self, data: schemas.RegisterUserData):
         async with self.crud.db.begin():
             user = await self.crud.create(
-                **userdata.model_dump(exclude_unset=True),
+                **data.model_dump(exclude_unset=True),
                 status=schemas.UserStatus.pending,
             )
         await self.crud.db.refresh(user)

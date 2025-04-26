@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     HOST: str = "localhost"
     PORT: int = 8000
     RELOAD: bool = False
+    DEFAULT_LANG: str = "en"
+    LOGS_DIR: str = "logs"
+    LOGGER_NAME: str = "neuer-standard"
 
     class Config:
         env_file = ".env"
