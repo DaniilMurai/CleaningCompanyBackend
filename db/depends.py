@@ -1,10 +1,9 @@
-from typing import AsyncGenerator
-
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from db.session import async_session
+from fastapi import Depends
+from starlette.requests import Request
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session() as session:
-        yield session
+async def get_db(request: Request):
+    return request.state.db
+
+
+DBDepend = Depends(get_db)

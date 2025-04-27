@@ -19,14 +19,12 @@ def createsuperadmin(
         db: AsyncSession
         async with async_session() as db:
             crud = UserCRUD(db)
-            async with db.begin():
-                user = await crud.create(
-                    nickname=nickname,
-                    password=password,
-                    role=schemas.UserRole.superadmin,
-                    status=schemas.UserStatus.active,
-                )
-            await db.refresh(user)
+            user = await crud.create(
+                nickname=nickname,
+                password=password,
+                role=schemas.UserRole.superadmin,
+                status=schemas.UserStatus.active,
+            )
             typer.echo(f"Superadmin {user.nickname} #{user.id} created!")
 
     asyncio.run(run())

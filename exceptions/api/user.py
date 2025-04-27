@@ -27,7 +27,7 @@ class CreateUserWithRoleForbiddenError(APIException):
         self.data = {"role": role.value}
 
 
-class WrongPassword(APIException):  # TODO не работает :(
+class WrongPasswordError(APIException):
     status_code = status.HTTP_409_CONFLICT
 
     def __init__(self, password: str):

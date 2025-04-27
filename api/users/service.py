@@ -1,11 +1,7 @@
-from typing import Annotated
-
-from fastapi import Depends
-
 import exceptions
 import schemas.base
 from db.crud import UserCRUD
-from schemas import UserUpdatePassword, UserdataUpdate
+from schemas import UpdateUserData, UserUpdatePassword
 from utils.password import verify_password
 from .base.service import UserDepend
 
@@ -14,7 +10,7 @@ class UsersService:
     def __init__(
             self,
             user: UserDepend,
-            crud: Annotated[UserCRUD, Depends()]
+            crud: UserCRUD.depends()
     ):
         self.user = user
         self.crud = crud
@@ -23,24 +19,20 @@ class UsersService:
         return self.user
 
     async def change_password(self, data: UserUpdatePassword):
-
         if not verify_password(data.old_password, self.user.hashed_password):
-            raise exceptions.WrongPassword(data.old_password)
+            raise exceptions.WrongPasswordError(data.old_password)
 
         await self.crud.update(
             self.user, password=data.new_password
-        )  # TODO не работает
+        )
+        await self.crud.db.commit()
 
         return schemas.SuccessResponse(success=True)
 
-    async def change_userdata(self, data: UserdataUpdate):
-
-        await self.crud.validate_nickname(data.nickname, self.user.id)
-
-        # TODO не работает
+    async def update_current_user(self, data: UpdateUserData):
         await self.crud.update(
-            self.user, nickname=data.nickname, full_name=data.full_name
-        )  # TODO если одно из полей не передано оно будет none, такого не должно
-        # TODO быть, в функцию update нужно добавить exclude_none или чет такое
+            self.user, **data.model_dump(exclude_none=True)
+        )
+        await self.crud.db.commit()
 
-        return schemas.SuccessResponse(success=True)
+        return self.user

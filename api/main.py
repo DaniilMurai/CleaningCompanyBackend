@@ -2,6 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from config import settings
 from db.models import create_tables
@@ -9,6 +10,7 @@ from loggers.setup import setup_logger
 from utils.api import setup_uvicorn_loggers
 from . import admin, auth, users
 from .base.exception_handlers import register_general_exception_handlers
+from .middlewares.db import db_middleware
 
 
 @asynccontextmanager
@@ -35,6 +37,7 @@ app = FastAPI(
 app.mount("/auth", auth.app)
 app.mount("/admin", admin.app)
 app.mount("/users", users.app)
+app.add_middleware(BaseHTTPMiddleware, dispatch=db_middleware)
 
 register_general_exception_handlers(app)
 

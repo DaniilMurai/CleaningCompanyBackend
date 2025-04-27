@@ -1,6 +1,4 @@
-from typing import Annotated
-
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 from jose import JWTError
 from starlette import status
 
@@ -15,7 +13,7 @@ from utils.security.tokens import (
 
 
 class AuthService:
-    def __init__(self, crud: Annotated[UserCRUD, Depends()]):
+    def __init__(self, crud: UserCRUD.depends()):
         self.crud = crud
 
     @classmethod
@@ -63,11 +61,11 @@ class AuthService:
                 detail="Invite not found or already activated"
             )
 
-        async with self.crud.db.begin():
-            await self.crud.update(
-                user, data.model_dump(exclude={"token"}, exclude_none=True),
-                status=schemas.UserStatus.active
-            )
+        await self.crud.update(
+            user, data.model_dump(exclude={"token"}, exclude_none=True),
+            status=schemas.UserStatus.active
+        )
+        await self.crud.db.commit()
 
         return self.get_tokens_pair(user)
 

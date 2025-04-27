@@ -38,5 +38,5 @@ async def update_user(
 async def delete_user(
         user_id: int,
         admin_service: AdminUsersService = Depends()
-):
+) -> schemas.SuccessResponse:
     return await admin_service.delete_user(user_id)

@@ -1,7 +1,3 @@
-from typing import Annotated
-
-from fastapi import Depends
-
 import exceptions
 import schemas
 from api.admin.base.service import AdminUserDepend
@@ -15,7 +11,7 @@ class AdminUsersService:
     def __init__(
             self,
             admin: AdminUserDepend,
-            crud: Annotated[AdminUsersCRUD, Depends()]
+            crud: AdminUsersCRUD.depends()
     ):
         self.admin = admin
         self.crud: AdminUsersCRUD = crud
@@ -33,12 +29,11 @@ class AdminUsersService:
     async def create_user(self, data: schemas.RegisterUserData):
         self.check_access_to_role(data.role)
 
-        async with self.crud.db.begin():
-            user = await self.crud.create(
-                **data.model_dump(exclude_unset=True),
-                status=schemas.UserStatus.pending,
-            )
-        await self.crud.db.refresh(user)
+        user = await self.crud.create(
+            **data.model_dump(exclude_unset=True),
+            status=schemas.UserStatus.pending,
+        )
+        await self.crud.db.commit()
 
         token = create_invite_token({"sub": user.id, "type": "invite"})
         return {"invite_link": f"{settings.FRONTEND_URL}/activate?token={token}"}
@@ -48,22 +43,21 @@ class AdminUsersService:
             user_id: int,
             userdata: schemas.UserUpdateData
     ):
-        async with self.crud.db.begin():
-            user = await self.crud.get(user_id)
-            if not user:
-                raise exceptions.ObjectNotFoundByIdError("user", user_id)
+        user = await self.crud.get(user_id)
+        if not user:
+            raise exceptions.ObjectNotFoundByIdError("user", user_id)
 
-            data_to_update = userdata.model_dump(
-                exclude_none=True
-            )
-            user = await self.crud.update(
-                user, data_to_update
-            )
+        data_to_update = userdata.model_dump(
+            exclude_none=True
+        )
+        user = await self.crud.update(
+            user, data_to_update
+        )
 
-        # здесь транзакция уже закоммичена
-        await self.crud.db.refresh(user)
+        await self.crud.db.commit()
         return user
 
     async def delete_user(self, user_id: int):
-        async with self.crud.db.begin():
-            return await self.crud.delete(user_id)
+        await self.crud.delete(user_id)
+        await self.crud.db.commit()
+        return schemas.SuccessResponse(success=True)

@@ -35,6 +35,6 @@ class UserSchema(BaseModel):
         from_attributes = True
 
 
-class UserdataUpdate(BaseModel):
-    nickname: Optional[str]
-    full_name: Optional[str]
+class UpdateUserData(BaseModel):
+    nickname: Optional[str] = None
+    full_name: Optional[str] = None

@@ -70,7 +70,10 @@ class BaseModelCrud(CRUD, Generic[T]):
         result = await self.db.scalars(stmt)
         return result.all()
 
-    async def pre_process_update_data(self, data: dict) -> dict:
+    async def pre_process_update_data(
+            self, data: dict,
+            current_obj_id: int | None = None
+    ) -> dict:
         return data
 
     async def update(self, obj: T, __data: dict | None = None, **kwargs) -> T:
@@ -78,13 +81,14 @@ class BaseModelCrud(CRUD, Generic[T]):
             {
                 **(__data or {}),
                 **kwargs
-            }
+            },
+            obj.id
         )
         if not data:
             return obj
         for key, value in data.items():
             setattr(obj, key, value)
-        await self.db.commit()
+
         return obj
 
     async def pre_process_create_data(self, data: dict) -> dict:

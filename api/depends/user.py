@@ -13,7 +13,7 @@ from .token import get_token_data
 async def get_current_user(
         scopes: SecurityScopes,
         token_data: Annotated[dict, Depends(get_token_data("access"))],
-        crud: Annotated[UserCRUD, Depends()],
+        crud: UserCRUD.depends(),
 ):
     try:
         user_id = int(token_data["sub"])
