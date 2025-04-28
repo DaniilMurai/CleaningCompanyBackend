@@ -26,7 +26,7 @@ class AdminUsersService:
         kwargs = params.model_dump(exclude_none=True) if params else {}
         return await self.crud.get_list(**kwargs)
 
-    async def create_user(self, data: schemas.RegisterUserData):
+    async def create_user(self, data: schemas.RegisterUserData) -> schemas.InviteLink:
         self.check_access_to_role(data.role)
 
         user = await self.crud.create(
@@ -36,13 +36,16 @@ class AdminUsersService:
         await self.crud.db.commit()
 
         token = create_invite_token({"sub": user.id, "type": "invite"})
-        return {"invite_link": f"{settings.FRONTEND_URL}/activate?token={token}"}
+        return schemas.InviteLink(
+            invite_link=(f"{settings.FRONTEND_URL}/activate?token="
+                         f"{token}")
+        )
 
     async def update_user(
             self,
             user_id: int,
             userdata: schemas.UserUpdateData
-    ):
+    ) -> schemas.UserSchema:
         user = await self.crud.get(user_id)
         if not user:
             raise exceptions.ObjectNotFoundByIdError("user", user_id)
@@ -55,7 +58,7 @@ class AdminUsersService:
         )
 
         await self.crud.db.commit()
-        return user
+        return schemas.UserSchema.model_validate(user)
 
     async def delete_user(self, user_id: int):
         await self.crud.delete(user_id)

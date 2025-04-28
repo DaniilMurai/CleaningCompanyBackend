@@ -43,10 +43,10 @@ register_general_exception_handlers(app)
 
 
 @app.get("/")
-async def root():
+async def root() -> dict[str, str]:
     return {"message": "Hello, async world!"}
 
 
 @app.get("/health", tags=["status"])
-async def health():
+async def health() -> str:
     return "OK"

@@ -38,3 +38,7 @@ class GetUsersParams(BaseModel):
     search: str | None = None
     offset: int | None = None
     limit: int | None = None
+
+
+class InviteLink(BaseModel):
+    invite_link: str

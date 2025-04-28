@@ -21,7 +21,7 @@ async def get_users(
 async def create_user(
         userdata: schemas.RegisterUserData,
         admin_service: AdminUsersService = Depends(),
-):
+) -> schemas.InviteLink:
     return await admin_service.create_user(userdata)
 
 
@@ -30,7 +30,7 @@ async def update_user(
         user_id: int,
         userdata: schemas.UserUpdateData,
         admin_service: AdminUsersService = Depends()
-):
+) -> schemas.UserSchema:
     return await admin_service.update_user(user_id, userdata)
 
 
