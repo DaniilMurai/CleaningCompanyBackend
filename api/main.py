@@ -1,7 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from config import settings
@@ -10,6 +9,7 @@ from loggers.setup import setup_logger
 from utils.api import setup_uvicorn_loggers
 from . import admin, auth, users
 from .base.exception_handlers import register_general_exception_handlers
+from .custom_fastapi import CustomFastApi
 from .middlewares.db import db_middleware
 
 
@@ -29,7 +29,7 @@ async def lifespan(_):
     yield
 
 
-app = FastAPI(
+app = CustomFastApi(
     title="Neuer Standard API",
     lifespan=lifespan,
 )

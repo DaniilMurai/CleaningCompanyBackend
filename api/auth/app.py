@@ -1,9 +1,8 @@
-from fastapi import FastAPI
-
 from .router import router
 from ..base.exception_handlers import register_general_exception_handlers
+from ..custom_fastapi import CustomFastApi
 
-app = FastAPI(
+app = CustomFastApi(
     title="Neuer Standard Auth API",
 )
 
