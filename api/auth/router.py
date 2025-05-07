@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 import schemas
 from .service import AuthService
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(tags=["auth"])
 
 
 @router.post("/login")

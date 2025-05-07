@@ -3,9 +3,9 @@ from fastapi.params import Depends
 
 import schemas
 from api.users.service import UsersService
-from schemas import UserUpdatePassword, UpdateUserData
+from schemas import UpdateUserData, UserUpdatePassword
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(tags=["users"])
 
 
 @router.get("/me")

@@ -2,6 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.cors import CORSMiddleware
 
 from config import settings
 from db.models import create_tables
@@ -32,6 +33,14 @@ async def lifespan(_):
 app = CustomFastApi(
     title="Neuer Standard API",
     lifespan=lifespan,
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        settings.FRONTEND_URL,
+    ],
+    allow_methods=["*"],
+    allow_credentials=True,
 )
 
 app.mount("/auth", auth.app)
