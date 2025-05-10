@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     FRONTEND_URL: str
-    HOST: str = "localhost"
+    HOST: str
     PORT: int = 8000
     RELOAD: bool = False
     DEFAULT_LANG: str = "en"

@@ -103,6 +103,7 @@ class BaseModelCrud(CRUD, Generic[T]):
         )
         obj = self.model(**data)
         self.db.add(obj)
+        await self.db.commit()
         return obj
 
     async def delete(self, id: int):

@@ -41,6 +41,7 @@ app.add_middleware(
     ],
     allow_methods=["*"],
     allow_credentials=True,
+    allow_headers=["*"]
 )
 
 app.mount("/auth", auth.app)
