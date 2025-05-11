@@ -7,8 +7,8 @@ from ..base import Base
 
 
 class User(Base):
-    nickname: str = Column(String, nullable=False)
-    hashed_password: str = Column(String, nullable=False)
+    nickname: str | None = Column(String, unique=True)
+    hashed_password: str | None = Column(String)
     role: schemas.UserRole = Column(
         SQLEnum(schemas.UserRole),
         default=schemas.UserRole.employee,
@@ -19,7 +19,7 @@ class User(Base):
         default=schemas.UserStatus.pending,
         nullable=False,
     )
-    full_name: str | None = Column(String)
+    full_name: str = Column(String, nullable=False)
     admin_note: str | None = Column(String)
     created_at: datetime = Column(
         DateTime,

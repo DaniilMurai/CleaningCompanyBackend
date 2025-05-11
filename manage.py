@@ -13,6 +13,7 @@ app = typer.Typer()
 @app.command()
 def createsuperadmin(
         nickname: str = typer.Option(..., prompt=True),
+        full_name: str = typer.Option(..., prompt=True),
         password: str = typer.Option(..., prompt=True, hide_input=True),
 ):
     async def run():
@@ -22,6 +23,7 @@ def createsuperadmin(
             user = await crud.create(
                 nickname=nickname,
                 password=password,
+                full_name=full_name,
                 role=schemas.UserRole.superadmin,
                 status=schemas.UserStatus.active,
             )
