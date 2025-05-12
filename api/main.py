@@ -34,10 +34,15 @@ app = CustomFastApi(
     title="Neuer Standard API",
     lifespan=lifespan,
 )
+origins = [
+    "http://neuer-standart.surge.sh",
+    "https://neuer-standart.surge.sh"
+]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        settings.FRONTEND_URL,
+        settings.FRONTEND_URL, origins
     ],
     allow_methods=["*"],
     allow_credentials=True,
