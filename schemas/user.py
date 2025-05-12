@@ -22,6 +22,19 @@ class UserUpdatePassword(BaseModel):
     new_password: str
 
 
+class AdminReadUser(BaseModel):
+    id: int
+    nickname: Optional[str]
+    role: UserRole
+    status: UserStatus
+    full_name: Optional[str]
+    admin_note: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class UserSchema(BaseModel):
     id: int
     nickname: str
