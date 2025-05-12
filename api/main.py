@@ -1,8 +1,8 @@
 import logging
 from contextlib import asynccontextmanager
 
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.middleware.cors import CORSMiddleware
 
 from config import settings
 from db.models import create_tables
@@ -34,15 +34,12 @@ app = CustomFastApi(
     title="Neuer Standard API",
     lifespan=lifespan,
 )
-origins = [
-    "http://neuer-standart.surge.sh",
-    "https://neuer-standart.surge.sh"
-]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        settings.FRONTEND_URL, origins
+        settings.FRONTEND_URL, "http://neuer-standart.surge.sh",
+        "https://neuer-standart.surge.sh"
     ],
     allow_methods=["*"],
     allow_credentials=True,
