@@ -10,6 +10,7 @@ SECRET_KEY = settings.SECRET_KEY
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 INVITE_TOKEN_EXPIRE_DAYS = 7
+CHANGE_PASSWORD_TOKEN_EXPIRE_DAYS = 7
 ALGORITHM = settings.ALGORITHM
 
 token_blacklist = set()
@@ -37,6 +38,23 @@ def create_invite_token(data: dict, expires_delta: Optional[timedelta] = None):
         expire = datetime.now() + timedelta(days=INVITE_TOKEN_EXPIRE_DAYS)
 
     to_encode.update({"exp": expire, "type": "invite"})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+def create_forget_password_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+
+    # sub должна быть строка, потом нужно будет переводить в инт если буду работать с
+    # базой
+    to_encode["sub"] = str(to_encode["sub"])
+
+    if expires_delta:
+        expire = datetime.now() + expires_delta
+    else:
+        expire = datetime.now() + timedelta(days=INVITE_TOKEN_EXPIRE_DAYS)
+
+    to_encode.update({"exp": expire, "type": "forget_password"})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 

@@ -27,3 +27,8 @@ class TokenPair(BaseModel):
 
 class RefreshTokenData(BaseModel):
     refresh_token: str
+
+
+class ForgetPasswordData(BaseModel):
+    password: str
+    token: str

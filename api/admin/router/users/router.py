@@ -40,3 +40,11 @@ async def delete_user(
         admin_service: AdminUsersService = Depends()
 ) -> schemas.SuccessResponse:
     return await admin_service.delete_user(user_id)
+
+
+@router.post("/change-password")
+async def forget_password_link(
+        user_id: int,
+        admin_service: AdminUsersService = Depends()
+) -> schemas.ForgetPasswordLink:
+    return await admin_service.forget_password_link(user_id)

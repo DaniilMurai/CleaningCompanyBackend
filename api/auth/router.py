@@ -28,3 +28,11 @@ async def refresh_tokens(
         service: AuthService = Depends()
 ) -> schemas.TokenPair:
     return await service.refresh_tokens(request)
+
+
+@router.post("/forget-password")
+async def forget_password(
+        data: schemas.ForgetPasswordData,
+        service: AuthService = Depends()
+) -> schemas.TokenPair:
+    return await service.forget_password(data)

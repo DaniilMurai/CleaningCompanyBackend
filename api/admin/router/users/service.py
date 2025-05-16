@@ -4,7 +4,7 @@ from api.admin.base.service import AdminUserDepend
 from config import settings
 from db.crud import AdminUsersCRUD
 from schemas import UserRole
-from utils.security.tokens import create_invite_token
+from utils.security.tokens import create_forget_password_token, create_invite_token
 
 
 class AdminUsersService:
@@ -46,6 +46,8 @@ class AdminUsersService:
             user_id: int,
             userdata: schemas.UserUpdateData
     ) -> schemas.UserSchema:
+        self.check_access_to_role(userdata.role)
+
         user = await self.crud.get(user_id)
         if not user:
             raise exceptions.ObjectNotFoundByIdError("user", user_id)
@@ -64,3 +66,13 @@ class AdminUsersService:
         await self.crud.delete(user_id)
         await self.crud.db.commit()
         return schemas.SuccessResponse(success=True)
+
+    async def forget_password_link(self, user_id: int):
+
+        token = create_forget_password_token(
+            {"sub": user_id, "type": "forget_password"}
+        )
+        return schemas.ForgetPasswordLink(
+            forget_password_link=(f"{settings.FRONTEND_URL}/change-password?token="
+                                  f"{token}")
+        )

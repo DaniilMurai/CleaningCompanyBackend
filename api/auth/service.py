@@ -5,7 +5,7 @@ from starlette import status
 import schemas
 from db.crud import UserCRUD
 from db.models import User
-from utils.password import verify_password
+from utils.password import get_password_hash, verify_password
 from utils.security.tokens import (
     create_access_token, create_refresh_token,
     decode_token,
@@ -38,6 +38,35 @@ class AuthService:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect nickname or password",
             )
+
+        return self.get_tokens_pair(user)
+
+    async def forget_password(self, data: schemas.ForgetPasswordData):
+        try:
+            payload = decode_token(data.token)
+            if payload.get("type") != "forget_password":
+                raise JWTError()
+            user_id = int(payload["sub"])
+        except JWTError as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired forget_password token: " + str(e)
+            )
+
+        user = await self.crud.get(user_id)
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        hashed_password = get_password_hash(data.password)
+
+        await self.crud.update(
+            user, hashed_password=hashed_password
+        )
+
+        await self.crud.db.commit()
 
         return self.get_tokens_pair(user)
 

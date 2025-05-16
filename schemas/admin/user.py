@@ -42,3 +42,7 @@ class GetUsersParams(BaseModel):
 
 class InviteLink(BaseModel):
     invite_link: str
+
+
+class ForgetPasswordLink(BaseModel):
+    forget_password_link: str
