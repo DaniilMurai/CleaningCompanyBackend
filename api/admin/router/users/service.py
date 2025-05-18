@@ -73,6 +73,6 @@ class AdminUsersService:
             {"sub": user_id, "type": "forget_password"}
         )
         return schemas.ForgetPasswordLink(
-            forget_password_link=(f"{settings.FRONTEND_URL}/change-password?token="
+            forget_password_link=(f"{settings.FRONTEND_URL}/reset-password?token="
                                   f"{token}")
         )
