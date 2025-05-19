@@ -24,7 +24,9 @@ class AdminUsersService:
 
     async def get_users(self, params: schemas.GetUsersParams | None = None):
         kwargs = params.model_dump(exclude_none=True) if params else {}
-        return await self.crud.get_list(**kwargs)
+        return await self.crud.get_list(
+            **kwargs
+        )
 
     async def create_user(self, data: schemas.RegisterUserData) -> schemas.InviteLink:
         self.check_access_to_role(data.role)
@@ -75,4 +77,19 @@ class AdminUsersService:
         return schemas.ForgetPasswordLink(
             forget_password_link=(f"{settings.FRONTEND_URL}/reset-password?token="
                                   f"{token}")
+        )
+
+    async def get_invite_link(self, user_id: int) -> schemas.InviteLink:
+        user = await self.crud.get(user_id)
+        if not user:
+            raise exceptions.ObjectNotFoundByIdError("user", user_id)
+
+        if user.status != schemas.UserStatus.pending:
+            raise exceptions.UserAlreadyActivated(user.role.value)
+
+        token = create_invite_token({"sub": user.id, "type": "invite"})
+
+        return schemas.InviteLink(
+            invite_link=(f"{settings.FRONTEND_URL}/activate?token="
+                         f"{token}")
         )

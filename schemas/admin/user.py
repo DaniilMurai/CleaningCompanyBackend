@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -31,6 +32,23 @@ class UserUpdateData(BaseModel):
     admin_note: Optional[str] = None
 
 
+class SortDirection(str, Enum):
+    asc = "asc"
+    desc = "desc"
+
+
+class UserFields(
+    str, Enum
+):  # Наследуемся от str для автоматического приведения к строке
+    id = "id"  # ✅ Значение явно задано
+    nickname = "nickname"
+    role = "role"
+    status = "status"
+    full_name = "full_name"
+    admin_note = "admin_note"
+    created_at = "created_at"
+
+
 class GetUsersParams(BaseModel):
     role: UserRole | None = None
     status: UserStatus | None = None
@@ -38,6 +56,8 @@ class GetUsersParams(BaseModel):
     search: str | None = None
     offset: int | None = None
     limit: int | None = None
+    order_by: UserFields | None = None  # Используем Enum напрямую
+    direction: SortDirection | None = None  # Отдельный параметр для направления
 
 
 class InviteLink(BaseModel):

@@ -32,5 +32,14 @@ class WrongPasswordError(APIException):
 
     def __init__(self, password: str):
         self.message = f"Password {password} is not correct."
-        self.nickname = password
+        self.password = password
         self.data = {"password": password}
+
+
+class UserAlreadyActivated(APIException):
+    status_code = status.HTTP_409_CONFLICT
+
+    def __init__(self, role: schemas.UserRole):
+        self.message = f"User with {role} role already activated"
+        self.role = role
+        self.data = {"role": role}

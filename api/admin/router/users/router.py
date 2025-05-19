@@ -48,3 +48,11 @@ async def forget_password_link(
         admin_service: AdminUsersService = Depends()
 ) -> schemas.ForgetPasswordLink:
     return await admin_service.forget_password_link(user_id)
+
+
+@router.post("/get-invite-link")
+async def get_invite_link(
+        user_id: int,
+        admin_service: AdminUsersService = Depends()
+) -> schemas.InviteLink:
+    return await admin_service.get_invite_link(user_id)

@@ -1,6 +1,6 @@
 from typing import Any, Generic, List, Type, TypeVar
 
-from sqlalchemy import or_, select
+from sqlalchemy import asc, desc, or_, select
 
 import exceptions
 from db.base import Base
@@ -40,6 +40,7 @@ class BaseModelCrud(CRUD, Generic[T]):
             order_by: Any | tuple[Any, ...] | None = None,
             offset: int | None = None,
             limit: int | None = None,
+            direction: str | None = None,
             **kwargs,
     ) -> List[T]:
         stmt = self.get_statement(**kwargs)
@@ -57,10 +58,15 @@ class BaseModelCrud(CRUD, Generic[T]):
             )
 
         if order_by:
-            if isinstance(order_by, tuple):
-                stmt = stmt.order_by(*order_by)
+            field = order_by
+            column = getattr(self.model, field)
+
+            if direction == "desc":
+                stmt = stmt.order_by(desc(column))
             else:
-                stmt = stmt.order_by(order_by)
+                stmt = stmt.order_by(asc(column))
+        else:
+            stmt = stmt.order_by(desc(self.model.id))
 
         if offset:
             stmt = stmt.offset(offset)
