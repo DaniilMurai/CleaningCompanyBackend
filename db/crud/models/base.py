@@ -95,6 +95,7 @@ class BaseModelCrud(CRUD, Generic[T]):
         for key, value in data.items():
             setattr(obj, key, value)
 
+        await self.db.commit()
         return obj
 
     async def pre_process_create_data(self, data: dict) -> dict:
@@ -117,3 +118,4 @@ class BaseModelCrud(CRUD, Generic[T]):
         if not obj:
             raise exceptions.ObjectNotFoundByIdError(self.model.__name__, id)
         await self.db.delete(obj)
+        await self.db.commit()

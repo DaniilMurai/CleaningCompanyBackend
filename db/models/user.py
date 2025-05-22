@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import (Column, DateTime, Enum as SQLEnum, String)
+from sqlalchemy.orm import relationship
 
 import schemas
 from ..base import Base
@@ -26,6 +27,8 @@ class User(Base):
         default=datetime.now(),
         nullable=False,
     )
+
+    daily_assignments = relationship("DailyAssignment", back_populates="user")
 
     @property
     def allowed_scopes(self):
