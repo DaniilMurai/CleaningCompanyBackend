@@ -51,6 +51,7 @@ class RoomResponse(BaseModel):
         from_attributes = True
 
 
+#
 # class RoomResponse(RoomCreate):
 #     id: int
 #     tasks: list["TaskResponse"] = []
