@@ -86,14 +86,30 @@ class RoomTaskCreate(BaseModel):
     task_id: int
 
 
-class RoomTaskResponse(RoomTaskCreate):
+class RoomTaskUpdate(BaseModel):
+    times_since_done: int | None = None
+    room_id: int | None = None
+    task_id: int | None = None
+
+
+class RoomTaskResponse(BaseModel):
     id: int
+    room_id: int
+    task_id: int
     times_since_done: int
-    task: TaskResponse
-    room: RoomResponse
 
     class Config:
         from_attributes = True
+
+
+# class RoomTaskResponse(RoomTaskCreate):
+#     id: int
+#     times_since_done: int
+#     task: TaskResponse
+#     room: RoomResponse
+#
+#     class Config:
+#         from_attributes = True
 
 
 class DailyAssignmentCreate(BaseModel):
@@ -103,15 +119,35 @@ class DailyAssignmentCreate(BaseModel):
     admin_note: str | None = None
 
 
-class DailyAssignmentResponse(DailyAssignmentCreate):
-    id: int
+class DailyAssignmentUpdate(BaseModel):
+    location_id: int | None = None
+    user_id: int | None = None
+    date: datetime | None = None
+    admin_note: str | None = None
     user_note: str | None = None
-    extra_tasks: list["DailyExtraTaskResponse"] = []
-    user: "UserSchema"
-    location: LocationResponse
+
+
+class DailyAssignmentResponse(BaseModel):
+    id: int
+    location_id: int
+    user_id: int
+    date: datetime
+    admin_note: str | None = None
 
     class Config:
         from_attributes = True
+
+
+# class DailyAssignmentResponse(DailyAssignmentCreate):
+#     id: int
+#     user_note: str | None = None
+#     admin_note: str | None = None
+#     extra_tasks: list["DailyExtraTaskResponse"] = []
+#     user: "UserResponse"
+#     location: LocationResponse
+#
+#     class Config:
+#         from_attributes = True
 
 
 class DailyExtraTaskCreate(BaseModel):
@@ -120,13 +156,29 @@ class DailyExtraTaskCreate(BaseModel):
     task_id: int
 
 
-class DailyExtraTaskResponse(DailyExtraTaskCreate):
+class DailyExtraTaskUpdate(BaseModel):
+    daily_assignment_id: int | None = None
+    room_id: int | None = None
+    task_id: int | None = None
+
+
+class DailyExtraTaskResponse(BaseModel):
     id: int
-    room: RoomResponse
-    task: TaskResponse
+    daily_assignment_id: int
+    room_id: int
+    task_id: int
 
     class Config:
         from_attributes = True
+
+
+# class DailyExtraTaskResponse(DailyExtraTaskCreate):
+#     id: int
+#     room: RoomResponse
+#     task: TaskResponse
+#
+#     class Config:
+#         from_attributes = True
 
 
 class UserRole(enum.Enum):

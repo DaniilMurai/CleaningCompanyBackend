@@ -1,6 +1,7 @@
 from typing import Any, Generic, List, Type, TypeVar
 
-from sqlalchemy import asc, desc, or_, select
+from sqlalchemy import asc, desc, exists, or_, select
+from sqlalchemy.orm import DeclarativeBase
 
 import exceptions
 from db.base import Base
@@ -119,3 +120,11 @@ class BaseModelCrud(CRUD, Generic[T]):
             raise exceptions.ObjectNotFoundByIdError(self.model.__name__, id)
         await self.db.delete(obj)
         await self.db.commit()
+
+    async def exists(self, model: Type[DeclarativeBase], **filters) -> bool:
+        result = await self.db.execute(
+            select(
+                exists().where(*[getattr(model, k) == v for k, v in filters.items()])
+            )
+        )
+        return result.scalar()

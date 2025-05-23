@@ -11,10 +11,10 @@ router = APIRouter(prefix="/room-tasks", tags=["Room Tasks"])
 
 @router.get("/")
 async def get_room_tasks(
-        params: Annotated[schemas.RoomTaskCreate, Query()],  # TODO Схема ?
+        params: Annotated[schemas.RoomTaskUpdate, Query()],
         service: AdminRoomTaskService = Depends()
 ) -> list[schemas.RoomTaskResponse]:
-    pass
+    return await service.get_room_tasks(params)
 
 
 @router.post("/")
@@ -22,16 +22,16 @@ async def create_room_task(
         data: schemas.RoomTaskCreate,
         service: AdminRoomTaskService = Depends()
 ) -> schemas.RoomTaskResponse:
-    pass
+    return await service.create_room_task(data)
 
 
 @router.patch("/")
 async def edit_room_task(
         room_task_id: int,
-        data: schemas.RoomTaskCreate,  # TODO Схема ?
+        data: schemas.RoomTaskUpdate,
         service: AdminRoomTaskService = Depends()
 ) -> schemas.RoomTaskResponse:
-    pass
+    return await service.update_room_task(room_task_id, data)
 
 
 @router.delete("/")
@@ -39,4 +39,4 @@ async def delete_room_task(
         room_task_id: int,
         service: AdminRoomTaskService = Depends()
 ) -> schemas.SuccessResponse:
-    pass
+    return await service.delete_room_task(room_task_id)
