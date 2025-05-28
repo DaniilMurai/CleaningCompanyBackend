@@ -11,10 +11,10 @@ router = APIRouter(prefix="/rooms", tags=["rooms"])
 
 @router.get("/")
 async def get_rooms(
-        params: Annotated[schemas.RoomUpdate, Query()],
+        params: Annotated[schemas.AdminGetListParams, Query()],
         service: AdminRoomService = Depends(),
 ) -> list[schemas.RoomResponse]:
-    return await service.get_rooms(params)
+    return await service.get_list(params)
 
 
 @router.post("/")
@@ -22,7 +22,7 @@ async def create_room(
         data: schemas.RoomCreate,
         service: AdminRoomService = Depends(),
 ) -> schemas.RoomResponse:
-    return await service.create_room(data)
+    return await service.create(data)
 
 
 @router.patch("/")
@@ -31,7 +31,7 @@ async def edit_room(
         data: schemas.RoomUpdate,
         service: AdminRoomService = Depends(),
 ) -> schemas.RoomResponse:
-    return await service.update_room(room_id, data)
+    return await service.update(room_id, data)
 
 
 @router.delete("/")
@@ -39,4 +39,4 @@ async def delete_room(
         room_id: int,
         service: AdminRoomService = Depends(),
 ) -> schemas.SuccessResponse:
-    return await service.delete_room(room_id)
+    return await service.delete(room_id)

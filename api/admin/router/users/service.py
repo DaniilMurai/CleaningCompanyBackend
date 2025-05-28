@@ -1,6 +1,6 @@
 import exceptions
 import schemas
-from api.admin.base.service import AdminUserDepend
+from api.admin.base.depends import AdminUserDepend
 from config import settings
 from db.crud import AdminUsersCRUD
 from schemas import UserRole

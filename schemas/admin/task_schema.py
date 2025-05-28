@@ -1,8 +1,12 @@
-import enum
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel
+
+
+class AdminGetListParams(BaseModel):
+    offset: int | None = None
+    limit: int | None = None
+    search: str | None = None
 
 
 class LocationCreate(BaseModel):
@@ -75,10 +79,17 @@ class TaskUpdate(BaseModel):
 
 class TaskResponse(TaskCreate):
     id: int
-    rooms: list["RoomResponse"] = []
 
     class Config:
         from_attributes = True
+
+
+# class TaskResponse(TaskCreate):
+#     id: int
+#     rooms: list["RoomResponse"] = []
+#
+#     class Config:
+#         from_attributes = True
 
 
 class RoomTaskCreate(BaseModel):
@@ -133,6 +144,7 @@ class DailyAssignmentResponse(BaseModel):
     user_id: int
     date: datetime
     admin_note: str | None = None
+    user_note: str | None = None
 
     class Config:
         from_attributes = True
@@ -171,7 +183,6 @@ class DailyExtraTaskResponse(BaseModel):
     class Config:
         from_attributes = True
 
-
 # class DailyExtraTaskResponse(DailyExtraTaskCreate):
 #     id: int
 #     room: RoomResponse
@@ -181,26 +192,26 @@ class DailyExtraTaskResponse(BaseModel):
 #         from_attributes = True
 
 
-class UserRole(enum.Enum):
-    employee = "employee"
-    admin = "admin"
-    superadmin = "superadmin"
-
-
-class UserStatus(enum.Enum):
-    pending = "pending"
-    active = "active"
-    disabled = "disabled"
-
-
-class UserResponse(BaseModel):
-    id: int
-    nickname: str
-    role: UserRole
-    status: UserStatus
-    full_name: Optional[str]
-    admin_note: Optional[str]
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
+# class UserRole(enum.Enum):
+#     employee = "employee"
+#     admin = "admin"
+#     superadmin = "superadmin"
+#
+#
+# class UserStatus(enum.Enum):
+#     pending = "pending"
+#     active = "active"
+#     disabled = "disabled"
+#
+#
+# class UserResponse(BaseModel):
+#     id: int
+#     nickname: str
+#     role: UserRole
+#     status: UserStatus
+#     full_name: Optional[str]
+#     admin_note: Optional[str]
+#     created_at: datetime
+#
+#     class Config:
+#         from_attributes = True
