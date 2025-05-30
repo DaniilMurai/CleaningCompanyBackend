@@ -22,8 +22,6 @@ class AdminGenericService(
 
     crud_cls: Type[CRUD]
 
-    # create_schema: Type[CreateSchema]
-    # update_schema: Type[UpdateSchema]
     response_schema: Type[ResponseSchema]
     entity_name: str
 
@@ -53,7 +51,7 @@ class AdminGenericService(
         kwargs = params.model_dump(exclude_none=True) if params else {}
         items = await self.crud.get_list(**kwargs)
         return [self.response_schema.model_validate(item) for item in items]
-
+    
     async def create(
             self,
             data: CreateSchema
