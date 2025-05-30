@@ -66,7 +66,6 @@ class AdminUsersService:
 
     async def delete_user(self, user_id: int):
         await self.crud.delete(user_id)
-        await self.crud.db.commit()
         return schemas.SuccessResponse(success=True)
 
     async def forget_password_link(self, user_id: int):

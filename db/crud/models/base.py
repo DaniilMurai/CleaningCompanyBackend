@@ -19,6 +19,7 @@ class BaseModelCrud(CRUD, Generic[T]):
         return (
             select(cls.model)
             .filter_by(**kwargs)
+            .filter_by(is_deleted=False)  # Добавил Норм?
         )
 
     async def get(self, id: Any = None, **kwargs) -> T | None:
@@ -118,8 +119,17 @@ class BaseModelCrud(CRUD, Generic[T]):
         obj = await self.get(id)
         if not obj:
             raise exceptions.ObjectNotFoundByIdError(self.model.__name__, id)
-        await self.db.delete(obj)
-        await self.db.commit()
+        await self.update(obj, is_deleted=True)
+
+    async def restore(self, id: int):
+        obj = await self.get(id)
+        if not obj:
+            raise exceptions.ObjectNotFoundByIdError(self.model.__name__, id)
+        await self.update(obj, is_deleted=False)
+
+    async def get_deleted_list(self, **kwargs) -> List[T]:
+        stmt = select(self.model).filter_by(**kwargs, is_deleted=True)
+        return await self.db.scalars(stmt).all()
 
     async def exists(self, model: Type[DeclarativeBase], **filters) -> bool:
         result = await self.db.execute(
@@ -127,4 +137,19 @@ class BaseModelCrud(CRUD, Generic[T]):
                 exists().where(*[getattr(model, k) == v for k, v in filters.items()])
             )
         )
+        return result.scalar()
+
+    async def exists(
+            self,
+            model: Type[DeclarativeBase],
+            include_deleted: bool = False,  # Новый параметр
+            **filters
+    ) -> bool:
+        conditions = [getattr(model, k) == v for k, v in filters.items()]
+
+        # Добавляем условие только если не запрошены удалённые
+        if not include_deleted and hasattr(model, 'is_deleted'):
+            conditions.append(model.is_deleted == False)
+
+        result = await self.db.execute(select(exists().where(*conditions)))
         return result.scalar()
