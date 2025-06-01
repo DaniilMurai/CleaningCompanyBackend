@@ -150,6 +150,21 @@ class DailyAssignmentResponse(BaseModel):
         from_attributes = True
 
 
+class DailyAssignmentForUserResponse(BaseModel):
+    id: int
+    location: LocationResponse
+    rooms: list[RoomResponse] = []
+    tasks: list[TaskResponse] = []
+    room_tasks: list[RoomTaskResponse] = []
+    user_id: int
+    date: datetime
+    admin_note: str | None = None
+    user_note: str | None = None
+
+    class Config:
+        from_attributes = True
+
+
 # class DailyAssignmentResponse(DailyAssignmentCreate):
 #     id: int
 #     user_note: str | None = None

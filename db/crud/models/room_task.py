@@ -4,4 +4,4 @@ from db.models import RoomTask
 
 class RoomTaskCRUD(BaseModelCrud[RoomTask]):
     model = RoomTask
-    search_fields = ["task_id", "room_id", "times_since_done"]
+    # search_fields = ["task_id", "room_id", "times_since_done"]

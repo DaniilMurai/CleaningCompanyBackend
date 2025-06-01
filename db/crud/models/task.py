@@ -4,4 +4,4 @@ from db.models import Task
 
 class TaskCRUD(BaseModelCrud[Task]):
     model = Task
-    search_fields = ["location_id", "name"]
+    search_fields = "name"

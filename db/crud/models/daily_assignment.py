@@ -4,4 +4,4 @@ from db.models import DailyAssignment
 
 class DailyAssignmentCRUD(BaseModelCrud[DailyAssignment]):
     model = DailyAssignment
-    search_fields = ("id", "date", "admin_note", "user_id", "location_id")
+    search_fields = ("admin_note")

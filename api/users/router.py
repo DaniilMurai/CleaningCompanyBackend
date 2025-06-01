@@ -27,3 +27,10 @@ async def change_password(
         service: UsersService = Depends()
 ) -> schemas.SuccessResponse:
     return await service.change_password(data)
+
+
+@router.get("/daily-assignment")
+async def get_daily_assignment(
+        service: UsersService = Depends()
+) -> list[schemas.DailyAssignmentForUserResponse]:
+    return await service.get_daily_assignment()
