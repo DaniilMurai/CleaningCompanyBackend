@@ -51,14 +51,14 @@ class AdminGenericService(
         kwargs = params.model_dump(exclude_none=True) if params else {}
         items = await self.crud.get_list(**kwargs)
         return [self.response_schema.model_validate(item) for item in items]
-    
+
     async def create(
             self,
             data: CreateSchema
     ) -> ResponseSchema:
         item = await self.crud.create(**data.model_dump(exclude_none=True))
         return self.response_schema.model_validate(item)
-
+    
     async def update(
             self,
             item_id: int,

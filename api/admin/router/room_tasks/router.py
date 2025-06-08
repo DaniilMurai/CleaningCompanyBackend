@@ -22,7 +22,7 @@ async def create_room_task(
         data: schemas.RoomTaskCreate,
         service: AdminRoomTaskService = Depends()
 ) -> schemas.RoomTaskResponse:
-    return await service.create(data)
+    return await service.create_room_task(data)
 
 
 @router.patch("/")
@@ -31,7 +31,7 @@ async def edit_room_task(
         data: schemas.RoomTaskUpdate,
         service: AdminRoomTaskService = Depends()
 ) -> schemas.RoomTaskResponse:
-    return await service.update(room_task_id, data)
+    return await service.update_room_task(room_task_id, data)
 
 
 @router.delete("/")

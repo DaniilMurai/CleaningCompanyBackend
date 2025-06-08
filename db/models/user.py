@@ -29,6 +29,10 @@ class User(Base):
     )
 
     daily_assignments = relationship("DailyAssignment", back_populates="user")
+    # Обратная связь для отчетов
+    reports = relationship(
+        "Report", back_populates="user",
+    )
 
     @property
     def allowed_scopes(self):

@@ -1,4 +1,6 @@
+import enum
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -7,6 +9,8 @@ class AdminGetListParams(BaseModel):
     offset: int | None = None
     limit: int | None = None
     search: str | None = None
+    order_by: str | None = None
+    direction: str | None = None
 
 
 class LocationCreate(BaseModel):
@@ -92,21 +96,22 @@ class TaskResponse(TaskCreate):
 #         from_attributes = True
 
 
-class RoomTaskCreate(BaseModel):
+class BaseRoomTask(BaseModel):
     room_id: int
     task_id: int
 
 
-class RoomTaskUpdate(BaseModel):
+class RoomTaskCreate(BaseRoomTask):
+    pass
+
+
+class RoomTaskUpdate(BaseRoomTask):
+    __annotations__ = {k: Optional[v] for k, v in BaseRoomTask.__annotations__.items()}
     times_since_done: int | None = None
-    room_id: int | None = None
-    task_id: int | None = None
 
 
-class RoomTaskResponse(BaseModel):
+class RoomTaskResponse(BaseRoomTask):
     id: int
-    room_id: int
-    task_id: int
     times_since_done: int
 
     class Config:
@@ -121,6 +126,13 @@ class RoomTaskResponse(BaseModel):
 #
 #     class Config:
 #         from_attributes = True
+
+
+class AssignmentStatus(enum.Enum):
+    not_started = "not_started"
+    in_progress = "in_progress"
+    partially_completed = "partially_completed"
+    completed = "completed"
 
 
 class DailyAssignmentCreate(BaseModel):
