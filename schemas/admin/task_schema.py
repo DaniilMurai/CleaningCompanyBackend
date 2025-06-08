@@ -4,8 +4,6 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-import schemas
-
 
 class AdminGetListParams(BaseModel):
     offset: int | None = None
@@ -172,7 +170,7 @@ class DailyAssignmentForUserResponse(BaseModel):
     room_tasks: list[RoomTaskResponse] = []
     user_id: int
     date: datetime
-    status: schemas.AssignmentStatus
+    status: AssignmentStatus
     admin_note: str | None = None
     user_note: str | None = None
 

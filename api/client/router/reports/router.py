@@ -9,7 +9,7 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 
 @router.get("/")
 async def get_reports(
-        assignment_ids: [int],
+        assignment_ids: list[int],
         service: ReportService = Depends()
 ):
     return await service.get_reports(assignment_ids)
