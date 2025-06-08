@@ -7,6 +7,14 @@ from api.client.router.reports.service import ReportService
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 
+@router.get("/")
+async def get_reports(
+        assignment_ids: [int],
+        service: ReportService = Depends()
+):
+    return await service.get_reports(assignment_ids)
+
+
 @router.post("/")
 async def create_report(
         data: schemas.CreateReport,
