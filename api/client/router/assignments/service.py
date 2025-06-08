@@ -74,6 +74,7 @@ class AssignmentService:
                     tasks=tasks_response,
                     user_id=d.user_id,
                     date=d.date,
+                    status=d.status,
                     admin_note=d.admin_note,
                     user_note=d.user_note,
                 )
