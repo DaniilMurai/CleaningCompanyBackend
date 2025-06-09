@@ -1,18 +1,20 @@
 from fastapi import APIRouter
-from fastapi.params import Depends
+from fastapi.params import Depends, Query
 
 import schemas
 from api.client.router.reports.service import ReportService
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
+MAX_IDS = 100
+
 
 @router.get("/")
-async def get_report(
-        assignment_id: int,
+async def get_reports_by_assignment_ids(
+        assignment_ids: list[int] = Query(..., alias="id", max_length=MAX_IDS),
         service: ReportService = Depends()
-):
-    return await service.get_reports(assignment_id)
+) -> list[schemas.ReportResponse]:
+    return await service.get_reports_by_assignment_ids(assignment_ids)
 
 
 @router.post("/")

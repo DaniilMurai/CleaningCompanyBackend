@@ -10,16 +10,17 @@ class ReportService:
     ):
         self.crud = crud
 
-    async def get_reports(self, assignment_id: int) -> schemas.ReportResponse:
+    async def get_reports_by_assignment_ids(self, assignment_ids: list[int]) -> list[
+        schemas.ReportResponse]:
 
-        report = await self.crud.get(daily_assignment_id=assignment_id)
+        reports = await self.crud.get_list(ids=assignment_ids, f="daily_assignment_id")
 
-        if not report:
-            raise exceptions.ObjectNotFoundByIdError(
-                "report assignment_id", assignment_id
+        if not reports:
+            raise exceptions.ObjectsNotFoundByIdsError(
+                "report assignment_id", assignment_ids
             )
 
-        return schemas.ReportResponse.model_validate(report)
+        return [schemas.ReportResponse.model_validate(report) for report in reports]
 
     async def create_report(self, data: schemas.CreateReport) -> schemas.ReportResponse:
         report = await self.crud.create(data.model_dump())

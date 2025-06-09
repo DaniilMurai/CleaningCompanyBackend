@@ -19,7 +19,7 @@ class BaseModelCrud(CRUD, Generic[T]):
         return (
             select(cls.model)
             .filter_by(**kwargs)
-            .filter_by(is_deleted=False)  # Добавил Норм?
+            .filter_by(is_deleted=False)
         )
 
     async def get(self, id: Any = None, **kwargs) -> T | None:
@@ -43,9 +43,16 @@ class BaseModelCrud(CRUD, Generic[T]):
             offset: int | None = None,
             limit: int | None = None,
             direction: str | None = None,
+            ids: list[int] | None = None,
+            f: str = "id",
             **kwargs,
     ) -> List[T]:
         stmt = self.get_statement(**kwargs)
+
+        if ids is not None:
+            column = getattr(self.model, f)
+            stmt = stmt.where(column.in_(ids))
+
         if search:
             if not self.search_fields:
                 raise ValueError("search_fields is required for search to work")
