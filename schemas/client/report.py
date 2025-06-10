@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, computed_field, field_validator
 
 import exceptions
 import schemas
+from schemas import DailyAssignmentForUserResponse
 
 
 class ReportBase(BaseModel):
@@ -100,3 +101,8 @@ class ReportResponse(ReportBase):
         from_attributes=True,
         # json_encoders удален - не нужен в Pydantic V2
     )
+
+
+class AssignmentReportResponse(BaseModel):
+    assignment: DailyAssignmentForUserResponse
+    report: ReportResponse | None = None

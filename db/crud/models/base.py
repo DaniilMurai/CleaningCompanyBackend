@@ -15,9 +15,10 @@ class BaseModelCrud(CRUD, Generic[T]):
     search_fields: tuple[str, ...] | None = None
 
     @classmethod
-    def get_statement(cls, **kwargs):
+    def get_statement(cls, model: Type[Base] | None = None, **kwargs):
+
         return (
-            select(cls.model)
+            select(model or cls.model)
             .filter_by(**kwargs)
             .filter_by(is_deleted=False)
         )
@@ -42,15 +43,18 @@ class BaseModelCrud(CRUD, Generic[T]):
             order_by: Any | tuple[Any, ...] | None = None,
             offset: int | None = None,
             limit: int | None = None,
+            model: Type[Base] | None = None,
             direction: str | None = None,
             ids: list[int] | None = None,
             f: str = "id",
             **kwargs,
     ) -> List[T]:
-        stmt = self.get_statement(**kwargs)
+        current_model = model or self.model
+
+        stmt = self.get_statement(current_model, **kwargs)
 
         if ids is not None:
-            column = getattr(self.model, f)
+            column = getattr(current_model, f)
             stmt = stmt.where(column.in_(ids))
 
         if search:
@@ -60,7 +64,7 @@ class BaseModelCrud(CRUD, Generic[T]):
             stmt = stmt.where(
                 or_(
                     *[
-                        getattr(self.model, field).contains(search)
+                        getattr(current_model, field).contains(search)
                         for field in self.search_fields
                     ]
                 )
@@ -68,14 +72,14 @@ class BaseModelCrud(CRUD, Generic[T]):
 
         if order_by:
             field = order_by
-            column = getattr(self.model, field)
+            column = getattr(current_model, field)
 
             if direction == "desc":
                 stmt = stmt.order_by(desc(column))
             else:
                 stmt = stmt.order_by(asc(column))
         else:
-            stmt = stmt.order_by(desc(self.model.id))
+            stmt = stmt.order_by(desc(current_model.id))
 
         if offset:
             stmt = stmt.offset(offset)

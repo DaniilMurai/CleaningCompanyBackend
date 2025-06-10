@@ -96,6 +96,11 @@ class AssignmentService:
             user_note=d.user_note,
         )
 
+    async def get_daily_assignments_and_reports(self) -> list[
+        schemas.AssignmentReportResponse]:
+        assignments = await self.get_daily_assignments()
+        return await self.daily_crud.get_assignment_and_reports(assignments)
+
     async def get_daily_assignments(self) -> list[
         schemas.DailyAssignmentForUserResponse]:
 
