@@ -7,11 +7,12 @@ from db.models import DailyAssignment, Report
 
 class ReportCRUD(BaseModelCrud[Report]):
     model = Report
-    search_fields = "message"
-    order_by = ("start_time", "end_time",
-                "status", "daily_assignment_id",
-                "user_id", "message", "media_links"
-                )
+    search_fields = ["message"]
+    order_by = (
+        "start_time", "end_time",
+        "status", "daily_assignment_id",
+        "user_id", "message", "media_links"
+    )
 
     async def change_status(self, report_id: int, status: schemas.AssignmentStatus):
         report = await self.get(report_id)
