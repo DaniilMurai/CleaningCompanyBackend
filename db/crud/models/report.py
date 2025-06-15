@@ -2,11 +2,15 @@ from sqlalchemy import update
 
 import schemas
 from db.crud.models.base import BaseModelCrud
-from db.models import DailyAssignment, Report
+from db.models import DailyAssignment, Location, Report, User
 
 
 class ReportCRUD(BaseModelCrud[Report]):
     model = Report
+    user_model = User
+    location_model = Location
+    daily_assignment_model = DailyAssignment
+
     search_fields = ["message"]
     order_by = (
         "start_time", "end_time",

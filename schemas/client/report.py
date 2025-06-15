@@ -5,7 +5,11 @@ from pydantic import BaseModel, ConfigDict, computed_field, field_validator
 
 import exceptions
 import schemas
-from schemas import DailyAssignmentForUserResponse
+from schemas import AdminGetListParams, DailyAssignmentForUserResponse
+
+
+class AdminReportFilterParams(AdminGetListParams):
+    status: Optional[str] = None
 
 
 class ReportBase(BaseModel):

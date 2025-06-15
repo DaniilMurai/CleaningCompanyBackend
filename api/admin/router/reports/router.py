@@ -11,10 +11,10 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 
 @router.get("/")
 async def get_reports(
-        params: Annotated[schemas.AdminGetListParams, Query()],
+        params: Annotated[schemas.AdminReportFilterParams, Query()],
         service: AdminReportService = Depends()
 ) -> list[schemas.ReportResponse]:
-    return await service.get_list(params)
+    return await service.get_reports(params)
 
 
 @router.patch("/")

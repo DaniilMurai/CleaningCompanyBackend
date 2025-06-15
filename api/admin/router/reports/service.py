@@ -8,10 +8,13 @@ class AdminReportService(
         schemas.CreateReport,
         schemas.UpdateReport,
         schemas.ReportResponse,
-        schemas.AdminGetListParams,
+        schemas.AdminReportFilterParams,
         AdminReportCRUD
     ]
 ):
     response_schema = schemas.ReportResponse
     entity_name = "report"
     crud_cls = AdminReportCRUD
+
+    async def get_reports(self, params: schemas.AdminReportFilterParams | None = None):
+        return await self.crud.get_reports_crud(params)
