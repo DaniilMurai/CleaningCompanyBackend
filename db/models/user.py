@@ -4,6 +4,7 @@ from sqlalchemy import (Column, DateTime, Enum as SQLEnum, String)
 from sqlalchemy.orm import relationship
 
 import schemas
+from utils.date_time import utcnow
 from ..base import Base
 
 
@@ -24,7 +25,7 @@ class User(Base):
     admin_note: str | None = Column(String)
     created_at: datetime = Column(
         DateTime,
-        default=datetime.now(),
+        default=lambda x: utcnow(),
         nullable=False,
     )
 
