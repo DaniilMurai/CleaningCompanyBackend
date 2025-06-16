@@ -24,8 +24,8 @@ class User(Base):
     full_name: str = Column(String, nullable=False)
     admin_note: str | None = Column(String)
     created_at: datetime = Column(
-        DateTime,
-        default=lambda x: utcnow(),
+        DateTime(timezone=True),
+        default=lambda: utcnow(),
         nullable=False,
     )
 
