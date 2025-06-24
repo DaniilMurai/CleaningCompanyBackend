@@ -4,6 +4,7 @@ from sqlalchemy import asc, desc, exists, or_, select
 from sqlalchemy.orm import DeclarativeBase
 
 import exceptions
+from api.base.exception_handlers import logger
 from db.base import Base
 from db.crud.base import CRUD
 
@@ -23,18 +24,23 @@ class BaseModelCrud(CRUD, Generic[T]):
             .filter_by(is_deleted=False)
         )
 
-    async def get(self, id: Any = None, **kwargs) -> T | None:
-        if isinstance(id, self.model):
-            if not kwargs:
-                return id
-            kwargs["id"] = id.id
+    async def get(
+            self, id: Any = None, model: Type[Base] | None = None, f: str = "id",
+            **kwargs
+    ) -> T | None:
+        current_model = model or self.model
 
-        if id:
-            kwargs["id"] = id
-        elif not kwargs:
+        stmt = self.get_statement(current_model, **kwargs)
+
+        # если указан id, то использовать его с полем f
+        if id is not None:
+            field_column = getattr(current_model, f)
+            stmt = stmt.where(field_column == id)
+
+        # если нет id, но есть kwargs, то get_statement уже добавил фильтры
+        if id is None and not kwargs:
             return None
 
-        stmt = self.get_statement(**kwargs)
         return await self.db.scalar(stmt)
 
     async def get_list(
@@ -111,8 +117,34 @@ class BaseModelCrud(CRUD, Generic[T]):
         await self.db.commit()
         return obj
 
-    async def pre_process_create_data(self, data: dict) -> dict:
+    async def pre_process_create_data(self, data: dict | list[dict]) -> dict | list[
+        dict]:
         return data
+
+    async def create_batch(self, __data: list[dict]) -> list[Base] | list[Any] | None:
+
+        if not __data:
+            return []
+        data_list = await self.pre_process_create_data(__data)
+        objects = [self.model(**item) for item in data_list]
+
+        try:
+            self.db.add_all(objects)
+
+            await self.db.flush()
+
+            await self.db.execute(
+                select(self.model).where(
+                    self.model.id.in_([obj.id for obj in objects])
+                )
+            )
+
+            await self.db.commit()
+            return objects
+
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"Batch create failed: {str(e)}")
 
     async def create(self, __data: dict | None = None, **kwargs) -> T:
         data = await self.pre_process_create_data(

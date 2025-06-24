@@ -37,6 +37,6 @@ class ReportService:
         if not report:
             raise exceptions.ObjectNotFoundByIdError("report", report_id)
 
-        report = await self.crud.update(report, data.model_dump(exclude_none=True))
+        report = await self.crud.update(report, data.model_dump(exclude_unset=True))
         report = await self.crud.change_status(report.id, data.status)
         return schemas.ReportResponse.model_validate(report)

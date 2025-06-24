@@ -25,6 +25,14 @@ async def create_daily_assignment(
     return await service.create(data)
 
 
+@router.post("/assignments")
+async def create_daily_assignments_batch(
+        data: list[schemas.DailyAssignmentCreate],
+        service: AdminDailyAssignmentService = Depends()
+) -> list[schemas.DailyAssignmentResponse]:
+    return await service.crud.create_batch([item.model_dump() for item in data])
+
+
 @router.patch("/")
 async def edit_daily_assignment(
         daily_assignment_id: int,

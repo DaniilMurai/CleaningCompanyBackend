@@ -58,7 +58,13 @@ class AdminGenericService(
     ) -> ResponseSchema:
         item = await self.crud.create(**data.model_dump(exclude_none=True))
         return self.response_schema.model_validate(item)
-    
+
+    async def create_list(
+            self,
+            data: list[CreateSchema]
+    ) -> list[ResponseSchema]:
+        pass
+
     async def update(
             self,
             item_id: int,

@@ -130,6 +130,7 @@ class RoomTaskResponse(BaseRoomTask):
 
 class AssignmentStatus(enum.Enum):
     not_started = "not_started"
+    not_completed = "not_completed"
     in_progress = "in_progress"
     partially_completed = "partially_completed"
     completed = "completed"

@@ -12,6 +12,7 @@ from . import admin, auth, client, users
 from .base.exception_handlers import register_general_exception_handlers
 from .custom_fastapi import CustomFastApi
 from .middlewares.db import db_middleware
+from .scheduler import start_daily_assignment_scheduler
 
 
 @asynccontextmanager
@@ -27,6 +28,8 @@ async def lifespan(_):
         logs_dir=settings.LOGS_DIR,
         file_name="api.log",
     )
+
+    start_daily_assignment_scheduler()
     yield
 
 

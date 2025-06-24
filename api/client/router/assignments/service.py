@@ -7,6 +7,7 @@ from db.crud.models.location import LocationCRUD
 from db.crud.models.room import RoomCRUD
 from db.crud.models.room_task import RoomTaskCRUD
 from db.crud.models.task import TaskCRUD
+from db.models import Report
 
 
 class AssignmentService:
@@ -101,6 +102,31 @@ class AssignmentService:
     ) -> list[schemas.AssignmentReportResponse]:
         assignments = await self.get_daily_assignments()
         return await self.daily_crud.get_assignment_and_reports(assignments)
+
+    async def get_daily_assignment_and_report_by_report_id(
+            self, report_id: int
+    ) -> schemas.AssignmentReportResponse:
+        report = await self.crud.get(report_id, Report)
+        if not report:
+            raise exceptions.ObjectNotFoundByIdError("report", report_id)
+
+        assignment = await self.get_daily_assignment_by_id(report.daily_assignment_id)
+
+        if not assignment:
+            raise exceptions.ObjectNotFoundByIdError(
+                "assignment by report id", report_id
+            )
+        assignment_schema = schemas.DailyAssignmentForUserResponse.model_validate(
+            assignment
+        )
+        report_schema = schemas.ReportResponse.model_validate(
+            report
+        )
+
+        return schemas.AssignmentReportResponse(
+            assignment=assignment_schema,
+            report=report_schema,
+        )
 
     async def get_daily_assignments(
             self,

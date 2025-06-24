@@ -28,6 +28,14 @@ async def get_daily_assignments_and_reports(
     return await service.get_daily_assignments_and_reports()
 
 
+@router.get("/{report_id}")
+async def get_daily_assignment_and_report_by_report_id(
+        report_id: int,
+        service: AssignmentService = Depends()
+):
+    return await service.get_daily_assignment_and_report_by_report_id(report_id)
+
+
 @router.patch("/daily-assignment")
 async def update_daily_assignment_status(
         assignment_id: int,
