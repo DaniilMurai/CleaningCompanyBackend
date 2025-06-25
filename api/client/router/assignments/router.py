@@ -36,6 +36,15 @@ async def get_daily_assignment_and_report_by_report_id(
     return await service.get_daily_assignment_and_report_by_report_id(report_id)
 
 
+@router.patch("/")
+async def update_daily_assignment(
+        assignment_id: int,
+        data: schemas.DailyAssignmentForUserUpdate,
+        service: AssignmentService = Depends()
+) -> schemas.DailyAssignmentForUserResponse:
+    return await service.update_daily_assignment(assignment_id, data)
+
+
 @router.patch("/daily-assignment")
 async def update_daily_assignment_status(
         assignment_id: int,

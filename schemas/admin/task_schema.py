@@ -130,10 +130,11 @@ class RoomTaskResponse(BaseRoomTask):
 
 class AssignmentStatus(enum.Enum):
     not_started = "not_started"
-    not_completed = "not_completed"
     in_progress = "in_progress"
     partially_completed = "partially_completed"
     completed = "completed"
+    not_completed = "not_completed"
+    expired = "expired"
 
 
 class DailyAssignmentCreate(BaseModel):
@@ -151,6 +152,12 @@ class DailyAssignmentUpdate(BaseModel):
     user_note: str | None = None
 
 
+class DailyAssignmentForUserUpdate(BaseModel):
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    status: AssignmentStatus | None = None
+
+
 class DailyAssignmentResponse(BaseModel):
     id: int
     location_id: int
@@ -158,6 +165,8 @@ class DailyAssignmentResponse(BaseModel):
     date: datetime
     admin_note: str | None = None
     user_note: str | None = None
+    start_time: datetime | None = None
+    end_time: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -174,21 +183,11 @@ class DailyAssignmentForUserResponse(BaseModel):
     status: AssignmentStatus
     admin_note: str | None = None
     user_note: str | None = None
+    start_time: datetime | None = None
+    end_time: datetime | None = None
 
     class Config:
         from_attributes = True
-
-
-# class DailyAssignmentResponse(DailyAssignmentCreate):
-#     id: int
-#     user_note: str | None = None
-#     admin_note: str | None = None
-#     extra_tasks: list["DailyExtraTaskResponse"] = []
-#     user: "UserResponse"
-#     location: LocationResponse
-#
-#     class Config:
-#         from_attributes = True
 
 
 class DailyExtraTaskCreate(BaseModel):
@@ -211,36 +210,3 @@ class DailyExtraTaskResponse(BaseModel):
 
     class Config:
         from_attributes = True
-
-# class DailyExtraTaskResponse(DailyExtraTaskCreate):
-#     id: int
-#     room: RoomResponse
-#     task: TaskResponse
-#
-#     class Config:
-#         from_attributes = True
-
-
-# class UserRole(enum.Enum):
-#     employee = "employee"
-#     admin = "admin"
-#     superadmin = "superadmin"
-#
-#
-# class UserStatus(enum.Enum):
-#     pending = "pending"
-#     active = "active"
-#     disabled = "disabled"
-#
-#
-# class UserResponse(BaseModel):
-#     id: int
-#     nickname: str
-#     role: UserRole
-#     status: UserStatus
-#     full_name: Optional[str]
-#     admin_note: Optional[str]
-#     created_at: datetime
-#
-#     class Config:
-#         from_attributes = True

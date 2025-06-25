@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, String
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, TIMESTAMP
 from sqlalchemy.orm import relationship
 
 import schemas
@@ -11,6 +11,8 @@ class DailyAssignment(Base):
     date = Column(DateTime(timezone=True), nullable=False)
     admin_note = Column(String)
     user_note = Column(String)
+    start_time = Column(TIMESTAMP(timezone=True))
+    end_time = Column(TIMESTAMP(timezone=True))
     status = Column(
         Enum(schemas.AssignmentStatus),
         server_default=schemas.AssignmentStatus.not_started.value,

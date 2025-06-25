@@ -49,6 +49,19 @@ class AssignmentService:
         # который загружает все связи и возвращает полную схему
         return await self.get_daily_assignment_by_id(assignment_id)
 
+    async def update_daily_assignment(
+            self, assignment_id: int, data: schemas.DailyAssignmentForUserUpdate
+    ) -> schemas.DailyAssignmentForUserResponse:
+        daily_assignment_orm = await self.daily_crud.get(
+            id=assignment_id, user_id=self.user.id
+        )
+        if not daily_assignment_orm:
+            raise exceptions.ObjectNotFoundByIdError("daily_assignment", assignment_id)
+        data_to_update = data.model_dump(exclude_unset=True)
+        await self.daily_crud.update(daily_assignment_orm, data_to_update)
+
+        return await self.get_daily_assignment_by_id(assignment_id)
+
     async def get_daily_assignment_by_id(
             self, assignment_id: int
     ) -> schemas.DailyAssignmentForUserResponse:
@@ -95,6 +108,8 @@ class AssignmentService:
             status=d.status,
             admin_note=d.admin_note,
             user_note=d.user_note,
+            start_time=d.start_time,
+            end_time=d.end_time
         )
 
     async def get_daily_assignments_and_reports(

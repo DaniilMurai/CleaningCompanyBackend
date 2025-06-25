@@ -22,7 +22,7 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
             DailyAssignment.date < today,
             DailyAssignment.is_deleted.is_(False)
         )
-                .values(status=AssignmentStatus.not_completed)
+                .values(status=AssignmentStatus.expired)
                 )
 
         await self.db.execute(stmt)
