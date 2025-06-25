@@ -1,4 +1,10 @@
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, TIMESTAMP
+from datetime import timedelta
+
+from sqlalchemy import (
+    Column, ColumnElement, DateTime, Enum, ForeignKey, String,
+    TIMESTAMP, func,
+)
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 import schemas
@@ -28,3 +34,13 @@ class DailyAssignment(Base):
     reports = relationship(
         "Report", back_populates="daily_assignment"
     )
+
+    @hybrid_property
+    def duration(self) -> timedelta:
+        if self.end_time and self.start_time:
+            return self.end_time - self.start_time
+        return timedelta(0)
+
+    @duration.expression
+    def duration(cls) -> ColumnElement[timedelta]:
+        return func.age(cls.end_time - cls.start_time)

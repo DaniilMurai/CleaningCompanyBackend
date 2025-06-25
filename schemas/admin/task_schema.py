@@ -2,7 +2,7 @@ import enum
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 
 
 class AdminGetListParams(BaseModel):
@@ -185,6 +185,30 @@ class DailyAssignmentForUserResponse(BaseModel):
     user_note: str | None = None
     start_time: datetime | None = None
     end_time: datetime | None = None
+
+    @computed_field
+    @property
+    def duration_seconds(self) -> float | None:
+        """Вычисляет длительность в секундах"""
+        if self.start_time is None or self.end_time is None:
+            return None
+        return (self.end_time - self.start_time).total_seconds()
+
+    @computed_field
+    @property
+    def duration_minutes(self) -> float | None:
+        """Возвращает длительность в минутах"""
+        if self.start_time is None or self.end_time is None:
+            return None
+        return round(self.duration_seconds / 60, 1)
+
+    @computed_field
+    @property
+    def duration_hours(self) -> float | None:
+        """Возвращает длительность в часах"""
+        if self.start_time is None or self.end_time is None:
+            return None
+        return round(self.duration_seconds / 3600, 2)
 
     class Config:
         from_attributes = True
