@@ -49,6 +49,12 @@ class AssignmentService:
         # который загружает все связи и возвращает полную схему
         return await self.get_daily_assignment_by_id(assignment_id)
 
+    async def get_daily_assignments_and_reports(
+            self,
+    ) -> list[schemas.AssignmentReportResponse]:
+        assignments = await self.get_daily_assignments()
+        return await self.daily_crud.get_assignment_and_reports(assignments)
+
     async def update_daily_assignment(
             self, assignment_id: int, data: schemas.DailyAssignmentForUserUpdate
     ) -> schemas.DailyAssignmentForUserResponse:
@@ -112,37 +118,6 @@ class AssignmentService:
             end_time=d.end_time
         )
 
-    async def get_daily_assignments_and_reports(
-            self,
-    ) -> list[schemas.AssignmentReportResponse]:
-        assignments = await self.get_daily_assignments()
-        return await self.daily_crud.get_assignment_and_reports(assignments)
-
-    async def get_daily_assignment_and_report_by_report_id(
-            self, report_id: int
-    ) -> schemas.AssignmentReportResponse:
-        report = await self.crud.get(report_id, Report)
-        if not report:
-            raise exceptions.ObjectNotFoundByIdError("report", report_id)
-
-        assignment = await self.get_daily_assignment_by_id(report.daily_assignment_id)
-
-        if not assignment:
-            raise exceptions.ObjectNotFoundByIdError(
-                "assignment by report id", report_id
-            )
-        assignment_schema = schemas.DailyAssignmentForUserResponse.model_validate(
-            assignment
-        )
-        report_schema = schemas.ReportResponse.model_validate(
-            report
-        )
-
-        return schemas.AssignmentReportResponse(
-            assignment=assignment_schema,
-            report=report_schema,
-        )
-
     async def get_daily_assignments(
             self,
     ) -> list[schemas.DailyAssignmentForUserResponse]:
@@ -187,7 +162,34 @@ class AssignmentService:
                     status=d.status,
                     admin_note=d.admin_note,
                     user_note=d.user_note,
+                    start_time=d.start_time,
+                    end_time=d.end_time
                 )
             )
 
         return result
+
+    async def get_daily_assignment_and_report_by_report_id(
+            self, report_id: int
+    ) -> schemas.AssignmentReportResponse:
+        report = await self.crud.get(report_id, Report)
+        if not report:
+            raise exceptions.ObjectNotFoundByIdError("report", report_id)
+
+        assignment = await self.get_daily_assignment_by_id(report.daily_assignment_id)
+
+        if not assignment:
+            raise exceptions.ObjectNotFoundByIdError(
+                "assignment by report id", report_id
+            )
+        assignment_schema = schemas.DailyAssignmentForUserResponse.model_validate(
+            assignment
+        )
+        report_schema = schemas.ReportResponse.model_validate(
+            report
+        )
+
+        return schemas.AssignmentReportResponse(
+            assignment=assignment_schema,
+            report=report_schema,
+        )

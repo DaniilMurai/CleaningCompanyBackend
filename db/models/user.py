@@ -34,6 +34,7 @@ class User(Base):
     reports = relationship(
         "Report", back_populates="user",
     )
+    reports_exports = relationship("ReportsExport", back_populates="user")
 
     @property
     def allowed_scopes(self):

@@ -11,3 +11,5 @@ async_session = sessionmaker(
     expire_on_commit=False,
     class_=AsyncSession,
 )
+
+async_session_maker = async_session

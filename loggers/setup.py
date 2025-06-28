@@ -1,7 +1,14 @@
 import logging
 import os
+import platform
 from logging.handlers import RotatingFileHandler
 from typing import Callable
+
+try:
+    from concurrent_log_handler import ConcurrentRotatingFileHandler
+
+except ImportError:
+    ConcurrentRotatingFileHandler = None  # fallback если не установлен
 
 default_formatter = logging.Formatter(
     "%(asctime)s -%(name)s %(levelname)-8s  - %(message)s",
@@ -48,9 +55,25 @@ def setup_logger(
 
     if file_handler and file_name:
         file_path = os.path.join(logs_dir, file_name)
-        rh = RotatingFileHandler(
-            file_path, maxBytes=max_bytes, backupCount=backup_count
-        )
+
+        # ✅ Определяем систему
+        is_windows = platform.system() == "Windows"
+
+        if is_windows and ConcurrentRotatingFileHandler:
+            rh = ConcurrentRotatingFileHandler(
+                filename=file_path,
+                maxBytes=max_bytes,
+                backupCount=backup_count,
+                encoding='utf-8',
+            )
+        else:
+            rh = RotatingFileHandler(
+                filename=file_path,
+                maxBytes=max_bytes,
+                backupCount=backup_count,
+                encoding='utf-8',
+            )
+
         rh.setFormatter(get_formatter("file"))
         rh.setLevel(handlers_levels.get("file", level))
         handlers.append(rh)
