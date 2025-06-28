@@ -2,29 +2,24 @@ import csv
 import io
 from io import BytesIO
 
-from fastapi import Depends
-
-import schemas
 from core.reports.export.adapters.base import ReportsAdapter
-from db.crud.core.reports.export import ExportCrud
 
 
 class CsvAdapter(ReportsAdapter):
 
-    def __init__(
-            self, params: schemas.ReportExportParams, crud: ExportCrud = Depends()
-    ):
-        super().__init__(params)
-        self.crud = crud
-
-    async def get_result(self) -> tuple[BytesIO, str]:
-        data = await self.crud.get_reports_by_date(self.params)
+    async def get_result(self, data) -> tuple[BytesIO, str]:
+        if not data:
+            raise ValueError("Нет данных для экспорта")
 
         stream = io.StringIO()
         writer = csv.writer(stream)
-        writer.writerow(data[0].model_fields.keys())
+
+        first_row = {k: v for k, v in data[0].__dict__.items() if not k.startswith("_")}
+        writer.writerow(first_row.keys())
+
         for row in data:
-            writer.writerow(row.model_dump().values())
+            row_dict = {k: v for k, v in row.__dict__.items() if not k.startswith("_")}
+            writer.writerow(row_dict.values())
 
         byte_stream = io.BytesIO(stream.getvalue().encode("utf-8"))
         return byte_stream, "reports.csv"

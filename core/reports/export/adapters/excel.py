@@ -1,27 +1,23 @@
 from io import BytesIO
 
 import pandas as pd
-from fastapi.params import Depends
 
-import schemas
 from core.reports.export.adapters.base import ReportsAdapter
-from db.crud.core.reports.export import ExportCrud
 
 
 class ExcelAdapter(ReportsAdapter):
 
-    def __init__(
-            self, params: schemas.ReportExportParams, crud: ExportCrud = Depends()
-    ):
-        super().__init__(params)
-        self.crud = crud
+    async def get_result(self, data) -> tuple[BytesIO, str]:
+        rows = [{k: v for k, v in row.__dict__.items() if not k.startswith("_")} for row
+                in data]
+        df = pd.DataFrame(rows)
 
-    async def get_result(self) -> tuple[BytesIO, str]:
-        reports = await self.crud.get_reports_by_date(self.params)
-        df = pd.DataFrame([r.model_dump() for r in reports])
-        
         output = BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
+            # Вставь перед df.to_excel(writer, index=False)
+            for col in df.select_dtypes(include=["datetimetz"]).columns:
+                df[col] = df[col].dt.tz_localize(None)
+
             df.to_excel(writer, index=False)
 
         output.seek(0)
