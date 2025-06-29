@@ -17,6 +17,7 @@ class ReportsExport(Base):
     )
     file_path = Column(String)
     timezone = Column(String)
+    lang = Column(String)
     user_id = Column(ForeignKey("users.id"))
 
     user = relationship("User", back_populates="reports_exports")

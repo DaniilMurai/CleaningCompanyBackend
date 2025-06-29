@@ -1,6 +1,21 @@
 {
   "de": {
     "hello world": "Hallo der Welt",
-    "test error": "Test deutsch %{test}"
+    "test error": "Test deutsch %{test}",
+    "id": "ID",
+    "start_time_str": "Beginn",
+    "end_time_str": "Ende",
+    "message": "Nachricht",
+    "user_full_name": "Mitarbeiter",
+    "location_name": "Gebäude",
+    "location_address": "Adresse",
+    "assignment_date": "Auftragsdatum",
+    "status": "Status",
+    "not_started": "Nicht gestartet",
+    "in_progress": "In Bearbeitung",
+    "partially_completed": "Teilweise abgeschlossen",
+    "completed": "Abgeschlossen",
+    "not_completed": "Nicht abgeschlossen",
+    "expired": "Abgelaufen"
   }
 }

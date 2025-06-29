@@ -4,6 +4,8 @@ from io import BytesIO
 import exceptions
 import schemas
 from db.crud.admin.export_report import AdminExportReportCRUD
+from utils.date_time import format_duration
+from utils.init_i18n import locale_export_reports
 
 
 class ReportsAdapter(ABC):
@@ -31,7 +33,26 @@ class ReportsAdapter(ABC):
         return await cls.subclasses[key](params, crud).run()
 
     async def get_data(self):
-        return await self.crud.get_reports_by_date(self.params)
+        data = await self.crud.get_reports_by_date(self.params)
+        locale = self.params.lang
+        rows = []
+        for row in data:
+            row_dict = row.model_dump()
+            row_dict.pop('start_time', None)
+            row_dict.pop('end_time', None)
+            row_dict = {
+                "id": row.id,
+                "location_name": row.location_name,
+                "user_full_name": row.user_full_name,
+                "start_time_str": row.start_time_str,
+                "end_time_str": row.end_time_str,
+                "duration": format_duration(row.duration()),
+                "status": row.status,
+                "message": row.message
+            }
+
+            rows.append(locale_export_reports(row_dict, locale))
+        return rows
 
     async def run(self):
         data = await self.get_data()

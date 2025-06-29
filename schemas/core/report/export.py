@@ -1,7 +1,8 @@
 import enum
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, computed_field, model_validator
 
 
 class ReportExportParams(BaseModel):
@@ -10,6 +11,7 @@ class ReportExportParams(BaseModel):
     end_date: date
     timezone: str
     user_id: int | None = None
+    lang: Optional[str] = "ru"
 
 
 class ReportExportResponse(ReportExportParams):
@@ -40,6 +42,10 @@ class ReportExportRow(BaseModel):
 
     @model_validator(mode="after")
     def compute_human_time(self):
-        self.start_time_str = self.start_time.strftime("%d.%m.%Y %H:%M")
-        self.end_time_str = self.end_time.strftime("%d.%m.%Y %H:%M")
+        self.start_time_str = self.start_time.strftime("%H:%M")
+        self.end_time_str = self.end_time.strftime("%H:%M")
         return self
+
+    @computed_field
+    def duration(self) -> timedelta:
+        return self.end_time - self.start_time

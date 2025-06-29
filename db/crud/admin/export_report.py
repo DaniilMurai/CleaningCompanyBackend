@@ -26,6 +26,7 @@ def localise_datetime(
         dt: datetime, to_time_zone: str, from_timezone: str = None
 ) -> datetime:  # timezone may be utc
     if not isinstance(dt, datetime):
+        print("not isinstance: ", type(dt))
         return dt
     from_timezone = timezone(from_timezone) if from_timezone else utc
     to_time_zone = tz.gettz(to_time_zone) if to_time_zone != "utc" else tz.tzutc()

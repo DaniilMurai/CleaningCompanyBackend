@@ -23,7 +23,6 @@ class Report(Base):
         nullable=False,
         server_default=schemas.AssignmentStatus.not_started.value
     )
-
     daily_assignment = relationship("DailyAssignment", back_populates="reports")
     user = relationship("User", back_populates="reports")
 

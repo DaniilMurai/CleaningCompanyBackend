@@ -1,6 +1,21 @@
 {
   "ru": {
     "hello world": "Привет мир",
-    "test error": "Тест %{test}"
+    "test error": "Тест %{test}",
+    "id": "ID",
+    "start_time_str": "Начало",
+    "end_time_str": "Конец",
+    "message": "Сообщение",
+    "user_full_name": "Сотрудник",
+    "location_name": "Локация",
+    "location_address": "Адрес",
+    "assignment_date": "Дата задания",
+    "status": "Статус",
+    "not_started": "Не начато",
+    "in_progress": "В процессе",
+    "partially_completed": "Частично выполнено",
+    "completed": "Выполнено",
+    "not_completed": "Не выполнено",
+    "expired": "Просрочено"
   }
 }
