@@ -1,0 +1,6 @@
+{
+  "ru": {
+    "hello world": "Привет мир",
+    "test error": "Тест %{test}"
+  }
+}

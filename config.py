@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     DEFAULT_LANG: str = "en"
     LOGS_DIR: str = "logs"
     LOGGER_NAME: str = "neuer-standard"
+    LOCALES_PATH: str = "locales"
 
     class Config:
         env_file = ".env"

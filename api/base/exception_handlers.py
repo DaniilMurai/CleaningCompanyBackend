@@ -4,6 +4,7 @@ import traceback
 from functools import wraps
 from typing import Awaitable, Callable
 
+import i18n
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.utils import is_body_allowed_for_status_code
@@ -40,7 +41,7 @@ async def api_exception_handler(
     )
 
     status_code = error.status_code
-    detail_text = error.message
+    detail_text = i18n.t(error.message, locale=lang, **error.data or {})
     detail_data = error.data
 
     logger.error(

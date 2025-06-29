@@ -40,6 +40,7 @@ async def export_report_worker():
                     "export_type": report.export_type,
                     "start_date": report.start_date,
                     "end_date": report.end_date,
+                    "timezone": report.timezone,
                     "user_id": report.user_id,
                 }
                 params = schemas.ReportExportParams.model_validate(data)
@@ -48,7 +49,9 @@ async def export_report_worker():
 
                 if result and isinstance(result, tuple):
                     content, filename = result
-                    file_path = os.path.join(output_dir, f"{report.id}_reports.csv")
+                    file_path = os.path.join(
+                        output_dir, f"{report.id}_reports.{filename}"
+                    )
 
                     with open(file_path, "wb") as f:
                         f.write(content.getbuffer())

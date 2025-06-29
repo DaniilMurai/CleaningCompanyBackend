@@ -11,6 +11,9 @@ class CsvAdapter(ReportsAdapter):
         if not data:
             raise ValueError("Нет данных для экспорта")
 
+        for row in data:
+            print(row.__dict__)
+
         stream = io.StringIO()
         writer = csv.writer(stream)
 
@@ -22,4 +25,4 @@ class CsvAdapter(ReportsAdapter):
             writer.writerow(row_dict.values())
 
         byte_stream = io.BytesIO(stream.getvalue().encode("utf-8"))
-        return byte_stream, "reports.csv"
+        return byte_stream, "csv"
