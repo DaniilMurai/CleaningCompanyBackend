@@ -37,6 +37,7 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 *.csv
+*.xlsx
 
 # Unit test / coverage reports
 htmlcov/
