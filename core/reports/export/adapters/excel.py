@@ -18,7 +18,7 @@ class ExcelAdapter(ReportsAdapter):
             for col in df.select_dtypes(include=["datetimetz"]).columns:
                 df[col] = df[col].dt.tz_localize(None)
 
-            df.to_excel(writer, index=False)
+            df.to_excel(writer, index=False, engine="openpyxl")
 
         output.seek(0)
-        return output, "reports.xlsx"
+        return output, "xlsx"

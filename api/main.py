@@ -2,23 +2,29 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 
+import i18n
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.params import Depends
 from starlette.middleware.base import BaseHTTPMiddleware
 
+import exceptions
 from config import settings
 from core.reports.export.worker import export_report_worker
 from db.models import create_tables
 from loggers.setup import setup_logger
 from utils.api import setup_uvicorn_loggers
+from utils.init_i18n import init_i18n
 from . import admin, auth, client, users
 from .base.exception_handlers import register_general_exception_handlers
 from .custom_fastapi import CustomFastApi
+from .depends.lang import get_lang
 from .middlewares.db import db_middleware
 from .scheduler import start_daily_assignment_scheduler
 
 
 @asynccontextmanager
 async def lifespan(_):
+    init_i18n()
     await create_tables()
     setup_logger(
         name=settings.LOGGER_NAME,
@@ -41,6 +47,7 @@ async def lifespan(_):
 app = CustomFastApi(
     title="Neuer Standard API",
     lifespan=lifespan,
+    dependencies=[Depends(get_lang)]
 )
 
 app.add_middleware(
@@ -65,8 +72,13 @@ register_general_exception_handlers(app)
 
 
 @app.get("/")
-async def root() -> dict[str, str]:
-    return {"message": "Hello, async world!"}
+async def root(lang: str = Depends(get_lang)) -> dict[str, str]:
+    return {"message": i18n.t("hello world", locale=lang)}
+
+
+@app.post("/error")
+async def test_error(data: dict | None = None):
+    raise exceptions.TestError(data)
 
 
 @app.get("/health", tags=["status"])

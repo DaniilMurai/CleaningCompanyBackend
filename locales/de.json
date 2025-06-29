@@ -1,0 +1,6 @@
+{
+  "de": {
+    "hello world": "Hallo der Welt",
+    "test error": "Test deutsch %{test}"
+  }
+}

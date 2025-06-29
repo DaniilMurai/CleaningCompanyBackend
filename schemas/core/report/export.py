@@ -1,13 +1,14 @@
 import enum
 from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 
 class ReportExportParams(BaseModel):
     export_type: str
     start_date: date
     end_date: date
+    timezone: str
     user_id: int | None = None
 
 
@@ -26,11 +27,19 @@ class ReportStatus(enum.Enum):
 
 class ReportExportRow(BaseModel):
     id: int
-    start_time: datetime
-    end_time: datetime
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    start_time_str: str | None = None
+    end_time_str: str | None = None
     status: str
-    message: str
+    message: str | None = None
     user_full_name: str
     location_name: str
-    location_address: str
+    location_address: str | None = None
     assignment_date: date
+
+    @model_validator(mode="after")
+    def compute_human_time(self):
+        self.start_time_str = self.start_time.strftime("%d.%m.%Y %H:%M")
+        self.end_time_str = self.end_time.strftime("%d.%m.%Y %H:%M")
+        return self
