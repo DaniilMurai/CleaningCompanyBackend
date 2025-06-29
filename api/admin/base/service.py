@@ -28,7 +28,7 @@ class AdminGenericService(
     def __init__(
             self,
             admin: AdminUserDepend,
-            crud: BaseModelCrud,  # Используем DI для CRUD
+            crud: CRUD,  # Используем DI для CRUD
     ):
         self.admin = admin
         self.crud = crud
