@@ -1,7 +1,7 @@
 from starlette import status
 
 import schemas
-from exceptions.api.base import APIException
+from .base import APIException
 
 
 class NicknameCannotBeEmptyError(APIException):

@@ -46,7 +46,7 @@ class ReportsAdapter(ABC):
                 "user_full_name": row.user_full_name,
                 "start_time_str": row.start_time_str,
                 "end_time_str": row.end_time_str,
-                "duration": format_duration(row.duration()),
+                "duration": format_duration(row.duration),
                 "status": row.status,
                 "message": row.message
             }

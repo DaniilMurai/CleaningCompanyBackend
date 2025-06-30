@@ -1,3 +1,8 @@
+import os.path
+
+from starlette.responses import FileResponse
+
+import exceptions
 import schemas
 from api.admin.base.service import AdminGenericService
 from db.crud.admin.export_report import AdminExportReportCRUD
@@ -31,3 +36,29 @@ class AdminExportReportService(
             file_path: str | None = None
     ):
         return await self.crud.set_report_status(report, status, file_path)
+
+    async def download_report(self, export_id: int) -> FileResponse:
+        export = await self.crud.get(export_id)
+        if export.status == schemas.ReportStatus.failed:
+            raise exceptions.ReportExportStatusFailed
+        if export.status != schemas.ReportStatus.completed:
+            raise exceptions.ReportExportIsNotCompletedYet
+
+        print("export.file_path: ", export.file_path)
+
+        if not os.path.exists(export.file_path):
+            raise exceptions.ReportExportIsNotCompletedYet
+
+        media_type = ""
+        for char in export.file_path[::-1]:
+            if char == ".":
+                break
+            media_type += char
+        media_type = media_type[::-1]
+
+        print("media_type: ", media_type)
+
+        return FileResponse(
+            path=export.file_path, media_type=f"text/{media_type}",
+            filename=f"report_{export_id}.{media_type}"
+        )

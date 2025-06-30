@@ -3,6 +3,7 @@ import os
 
 import schemas
 from api.admin.router.export_reports.service import AdminExportReportService
+from config import settings
 from db.crud.admin.export_report import AdminExportReportCRUD
 from db.models import ReportsExport
 from db.session import async_session_maker
@@ -13,7 +14,7 @@ SECONDS = 1
 
 logger = JSONLogger('export_report_worker')
 
-output_dir = os.path.join(os.getcwd(), "exports")
+output_dir = settings.OUTPUT_REPORTS_EXPORTS_DIR
 
 
 async def export_report_worker():

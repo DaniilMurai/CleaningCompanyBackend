@@ -1,3 +1,5 @@
+import os
+
 from pydantic_settings import BaseSettings
 
 
@@ -13,6 +15,7 @@ class Settings(BaseSettings):
     LOGS_DIR: str = "logs"
     LOGGER_NAME: str = "neuer-standard"
     LOCALES_PATH: str = "locales"
+    OUTPUT_REPORTS_EXPORTS_DIR: str = os.path.join(os.getcwd(), "exports")
 
     class Config:
         env_file = ".env"
