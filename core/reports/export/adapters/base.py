@@ -48,7 +48,8 @@ class ReportsAdapter(ABC):
                 "end_time_str": row.end_time_str,
                 "duration": format_duration(row.duration),
                 "status": row.status,
-                "message": row.message
+                "message": row.message,
+                "rooms_not_done": row.failed_rooms
             }
 
             rows.append(locale_export_reports(row_dict, locale))

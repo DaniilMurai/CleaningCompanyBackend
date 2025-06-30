@@ -4,6 +4,8 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, computed_field, model_validator
 
+import schemas
+
 
 class ReportExportParams(BaseModel):
     export_type: str
@@ -40,6 +42,13 @@ class ReportExportRow(BaseModel):
     location_address: str | None = None
     assignment_date: date
 
+    # rooms: list[schemas.ReportRoom] = []
+    #
+    # @computed_field
+    # @property
+    # def failed_rooms(self) -> list[schemas.ReportRoom]:
+    #     return [room for room in self.rooms if room.status != RoomStatus.done]
+
     @model_validator(mode="after")
     def compute_human_time(self):
         self.start_time_str = self.start_time.strftime("%H:%M")
@@ -49,3 +58,15 @@ class ReportExportRow(BaseModel):
     @computed_field
     def duration(self) -> timedelta:
         return self.end_time - self.start_time
+
+
+class RoomStatus(enum.Enum):
+    not_done = "not_done"
+    done = "done"
+    partially_done = "partially_done"
+
+
+class ReportRoom:
+    room_id: int
+    report_id: int
+    status: schemas.RoomStatus

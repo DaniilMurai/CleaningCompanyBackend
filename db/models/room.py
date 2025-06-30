@@ -11,3 +11,4 @@ class Room(Base):
     location = relationship("Location", back_populates="rooms")
     room_tasks = relationship("RoomTask", back_populates="room")
     daily_extra_tasks = relationship("DailyExtraTask", back_populates="room")
+    report_rooms = relationship("ReportRoom", back_populates="rooms")

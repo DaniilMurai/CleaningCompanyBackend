@@ -21,6 +21,8 @@ class ReportBase(BaseModel):
     end_time: Optional[datetime] = None
     status: schemas.AssignmentStatus
 
+    # report_rooms: Optional[list[schemas.ReportRoom]] = None
+
     @field_validator("end_time")
     def validate_times(cls, end_time_value: Optional[datetime], info):
         """
@@ -59,6 +61,8 @@ class UpdateReport(BaseModel):
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     status: Optional[schemas.AssignmentStatus] = None
+
+    # report_rooms: Optional[list[schemas.ReportRoom]] = None
 
     @field_validator('end_time')
     def validate_update_times(cls, end_time, info):

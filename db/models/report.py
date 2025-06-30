@@ -25,6 +25,7 @@ class Report(Base):
     )
     daily_assignment = relationship("DailyAssignment", back_populates="reports")
     user = relationship("User", back_populates="reports")
+    report_rooms = relationship("ReportRoom", back_populates="reports")
 
     @hybrid_property
     def duration(self) -> timedelta:
