@@ -4,14 +4,12 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, computed_field, model_validator
 
-import schemas
-
 
 class ReportExportParams(BaseModel):
     export_type: str
     start_date: date
     end_date: date
-    timezone: str
+    timezone: str = "UTC"
     user_id: int | None = None
     lang: Optional[str] = "ru"
 
@@ -42,11 +40,13 @@ class ReportExportRow(BaseModel):
     location_address: str | None = None
     assignment_date: date
 
-    # rooms: list[schemas.ReportRoom] = []
+    rooms: list[str] | None = None
+
+    # rooms: list[schemas.ReportRoomResponse] = []
     #
     # @computed_field
     # @property
-    # def failed_rooms(self) -> list[schemas.ReportRoom]:
+    # def failed_rooms(self) -> list[schemas.ReportRoomResponse]:
     #     return [room for room in self.rooms if room.status != RoomStatus.done]
 
     @model_validator(mode="after")
@@ -58,15 +58,3 @@ class ReportExportRow(BaseModel):
     @computed_field
     def duration(self) -> timedelta:
         return self.end_time - self.start_time
-
-
-class RoomStatus(enum.Enum):
-    not_done = "not_done"
-    done = "done"
-    partially_done = "partially_done"
-
-
-class ReportRoom:
-    room_id: int
-    report_id: int
-    status: schemas.RoomStatus

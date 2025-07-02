@@ -1,4 +1,5 @@
 from sqlalchemy import or_, select
+from sqlalchemy.orm import selectinload
 
 import schemas
 from db.crud.models.report import ReportCRUD
@@ -20,7 +21,7 @@ class AdminReportCRUD(ReportCRUD):
         ).join(
             self.location_model,
             self.daily_assignment_model.location_id == self.location_model.id
-        )
+        ).options(selectinload(self.model.report_rooms))
 
         if params.status:
             stmt = stmt.where(self.model.status == params.status)
@@ -51,4 +52,5 @@ class AdminReportCRUD(ReportCRUD):
             stmt = stmt.limit(params.limit)
 
         result = await self.db.scalars(stmt)
-        return [schemas.ReportResponse.model_validate(r) for r in result.all()]
+        return [schemas.ReportResponse.model_validate(r, from_attributes=True) for r in
+                result.all()]

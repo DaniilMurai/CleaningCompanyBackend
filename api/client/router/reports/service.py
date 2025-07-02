@@ -22,12 +22,16 @@ class ReportService:
 
         return [schemas.ReportResponse.model_validate(report) for report in reports]
 
+    # async def create_report(self, data: schemas.CreateReport) ->
+    # schemas.ReportResponse:
+    #     report = await self.crud.create(data.model_dump())
+    #     report = await self.crud.change_status(
+    #         report.id, data.status
+    #     )  # status in_progress
+    #     return schemas.ReportResponse.model_validate(report)
+
     async def create_report(self, data: schemas.CreateReport) -> schemas.ReportResponse:
-        report = await self.crud.create(data.model_dump())
-        report = await self.crud.change_status(
-            report.id, data.status
-        )  # status in_progress
-        return schemas.ReportResponse.model_validate(report)
+        return await self.crud.create_report(data)
 
     async def update_report(
             self, report_id: int, data: schemas.UpdateReport

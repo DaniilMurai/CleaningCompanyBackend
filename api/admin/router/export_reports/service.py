@@ -24,7 +24,7 @@ class AdminExportReportService(
     crud_cls = AdminExportReportCRUD
 
     async def export_reports(self, params: schemas.ReportExportParams) -> int:
-        export_report = await self.crud.create(params.model_dump(exclude_none=True))
+        export_report = await self.crud.create(params.model_dump(exclude_unset=True))
 
         return export_report.id
 
@@ -62,3 +62,11 @@ class AdminExportReportService(
             path=export.file_path, media_type=f"text/{media_type}",
             filename=f"report_{export_id}.{media_type}"
         )
+    
+    async def get_export_reports(
+            self, params: schemas.AdminGetListParams | None = None
+    ) -> list[schemas.ReportExportResponse]:
+        export_reports = await self.crud.get_list(**params.model_dump())
+        return [schemas.ReportExportResponse.model_validate(
+            export_report, from_attributes=True
+        ) for export_report in export_reports]

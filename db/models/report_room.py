@@ -10,5 +10,5 @@ class ReportRoom(Base):
     report_id = Column(ForeignKey("reports.id"), nullable=False)
     status = Column(Enum(schemas.RoomStatus))
 
-    room = relationship("Room", back_populates="report_rooms")
-    report = relationship("Report", back_populates="report_rooms")
+    rooms = relationship("Room", back_populates="report_rooms")
+    reports = relationship("Report", back_populates="report_rooms")

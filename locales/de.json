@@ -16,6 +16,7 @@
     "partially_completed": "Teilweise abgeschlossen",
     "completed": "Abgeschlossen",
     "not_completed": "Nicht abgeschlossen",
-    "expired": "Abgelaufen"
+    "expired": "Abgelaufen",
+    "rooms_not_done": "Zimmer nicht erledigt"
   }
 }

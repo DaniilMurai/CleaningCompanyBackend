@@ -16,6 +16,7 @@
     "partially_completed": "Частично выполнено",
     "completed": "Выполнено",
     "not_completed": "Не выполнено",
-    "expired": "Просрочено"
+    "expired": "Просрочено",
+    "rooms_not_done": "Комнаты не сделаны"
   }
 }

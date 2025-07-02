@@ -8,7 +8,10 @@ from sqlalchemy.exc import SQLAlchemyError
 
 import schemas
 from db.crud.models.export_report import ExportReportCRUD
-from db.models import DailyAssignment, Location, Report, ReportsExport, User
+from db.models import (
+    DailyAssignment, Location, Report, ReportRoom, ReportsExport,
+    Room, User,
+)
 from loggers import JSONLogger
 
 logger = JSONLogger("export_report")
@@ -61,7 +64,9 @@ class AdminExportReportCRUD(ExportReportCRUD):
                 self.user_model.full_name.label("user_full_name"),
                 self.location_model.name.label("location_name"),
                 self.location_model.address.label("location_address"),
-                func.date(self.daily_assignment_model.date).label("assignment_date")
+                func.date(self.daily_assignment_model.date).label("assignment_date"),
+                func.array_agg(Room.name).label("rooms")
+                # <- здесь именно список имён
             )
             .join(self.user_model, Report.user_id == self.user_model.id)
             .join(
@@ -72,7 +77,26 @@ class AdminExportReportCRUD(ExportReportCRUD):
                 self.location_model,
                 self.daily_assignment_model.location_id == self.location_model.id
             )
+            .outerjoin(ReportRoom, ReportRoom.report_id == Report.id)
+            .outerjoin(
+                Room,
+                and_(
+                    ReportRoom.room_id == Room.id,
+                    ReportRoom.status != schemas.RoomStatus.done
+                )
+            )
             .where(and_(*conditions))
+            .group_by(
+                Report.id,
+                Report.start_time,
+                Report.end_time,
+                Report.status,
+                Report.message,
+                self.user_model.full_name,
+                self.location_model.name,
+                self.location_model.address,
+                func.date(self.daily_assignment_model.date)
+            )
             .order_by(Report.id)
         )
 
@@ -81,7 +105,14 @@ class AdminExportReportCRUD(ExportReportCRUD):
 
         processed_rows = []
         for r in rows:
-            processed_rows.append(dict(r))
+            row_dict = dict(r)
+            if row_dict.get("rooms") is None:
+                row_dict["rooms"] = []
+            else:
+                row_dict["rooms"] = [room for room in row_dict["rooms"]
+                                     if room is not None]
+
+            processed_rows.append(row_dict)
             processed_rows[-1]["start_time"] = localise_datetime(
                 r.start_time, params.timezone
             )
@@ -97,7 +128,6 @@ class AdminExportReportCRUD(ExportReportCRUD):
                 print(f"Skipping report ID={r['id']}: {e}")
 
         return valid_rows
-        # return [schemas.ReportExportRow.model_validate(r) for r in processed_rows]
 
     async def get_next_waiting_report(self) -> CursorResult | Result | None:
         try:

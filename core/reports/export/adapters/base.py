@@ -40,6 +40,7 @@ class ReportsAdapter(ABC):
             row_dict = row.model_dump()
             row_dict.pop('start_time', None)
             row_dict.pop('end_time', None)
+            rooms_str = ", ".join(row.rooms or "")
             row_dict = {
                 "id": row.id,
                 "location_name": row.location_name,
@@ -49,7 +50,7 @@ class ReportsAdapter(ABC):
                 "duration": format_duration(row.duration),
                 "status": row.status,
                 "message": row.message,
-                "rooms_not_done": row.failed_rooms
+                "rooms_not_done": rooms_str
             }
 
             rows.append(locale_export_reports(row_dict, locale))

@@ -146,14 +146,17 @@ class BaseModelCrud(CRUD, Generic[T]):
             await self.db.rollback()
             logger.error(f"Batch create failed: {str(e)}")
 
-    async def create(self, __data: dict | None = None, **kwargs) -> T:
+    async def create(
+            self, __data: dict | None = None, model: Type[Base] | None = None, **kwargs
+    ) -> T:
+        current_model = model or self.model
         data = await self.pre_process_create_data(
             {
                 **(__data or {}),
                 **kwargs
             }
         )
-        obj = self.model(**data)
+        obj = current_model(**data)
         self.db.add(obj)
         await self.db.commit()
         return obj

@@ -7,9 +7,9 @@ from config import settings
 from utils.date_time import utcnow
 
 SECRET_KEY = settings.SECRET_KEY
-ACCESS_TOKEN_EXPIRES = timedelta(minutes=15)
-REFRESH_TOKEN_EXPIRES = timedelta(days=7)
-INVITE_TOKEN_EXPIRES = timedelta(days=7)
+ACCESS_TOKEN_EXPIRES = timedelta(minutes=45)
+REFRESH_TOKEN_EXPIRES = timedelta(days=14)
+INVITE_TOKEN_EXPIRES = timedelta(days=14)
 ALGORITHM = settings.ALGORITHM
 
 token_blacklist = set()

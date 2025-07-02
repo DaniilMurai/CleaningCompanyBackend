@@ -15,3 +15,10 @@ class ReportExportIsNotCompletedYet(APIException):
 
     def __init__(self, data: dict | None = None):
         self.data = data
+
+
+class ErrorDuringReportCreate(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+
+    def __init__(self, data: dict | None = None):
+        self.data = data

@@ -1,3 +1,4 @@
+import enum
 from datetime import datetime
 from typing import Optional
 
@@ -12,6 +13,23 @@ class AdminReportFilterParams(AdminGetListParams):
     status: Optional[str] = None
 
 
+class RoomStatus(enum.Enum):
+    not_done = "not_done"
+    done = "done"
+    partially_done = "partially_done"
+
+
+class ReportRoomResponse(BaseModel):
+    room_id: int
+    report_id: int
+    status: RoomStatus
+
+
+class ReportRoomRequest(BaseModel):
+    room_id: int
+    status: RoomStatus
+
+
 class ReportBase(BaseModel):
     daily_assignment_id: int
     user_id: int
@@ -20,8 +38,6 @@ class ReportBase(BaseModel):
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     status: schemas.AssignmentStatus
-
-    # report_rooms: Optional[list[schemas.ReportRoom]] = None
 
     @field_validator("end_time")
     def validate_times(cls, end_time_value: Optional[datetime], info):
@@ -47,6 +63,7 @@ class ReportBase(BaseModel):
 
 
 class CreateReport(ReportBase):
+    report_rooms: Optional[list[ReportRoomRequest]] = None
     pass
 
 
@@ -61,8 +78,7 @@ class UpdateReport(BaseModel):
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     status: Optional[schemas.AssignmentStatus] = None
-
-    # report_rooms: Optional[list[schemas.ReportRoom]] = None
+    report_rooms: Optional[list[ReportRoomRequest]] = None
 
     @field_validator('end_time')
     def validate_update_times(cls, end_time, info):
@@ -76,6 +92,7 @@ class UpdateReport(BaseModel):
 class ReportResponse(ReportBase):
     """Схема для ответа API"""
     id: int
+    report_rooms: Optional[list[ReportRoomResponse]] = []
 
     # Убираем явные декларации duration_seconds и duration_minutes
     # Они будут полностью вычисляемыми
@@ -107,7 +124,6 @@ class ReportResponse(ReportBase):
     # Конфигурация для работы с ORM
     model_config = ConfigDict(
         from_attributes=True,
-        # json_encoders удален - не нужен в Pydantic V2
     )
 
 

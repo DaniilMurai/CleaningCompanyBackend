@@ -17,15 +17,6 @@ async def get_reports(
     return await service.get_reports(params)
 
 
-@router.patch("/")
-async def update_report(
-        report_id: int,
-        data: schemas.UpdateReport,
-        service: AdminReportService = Depends()
-) -> schemas.ReportResponse:
-    return await service.update(report_id, data)
-
-
 @router.delete("/")
 async def delete_report(
         report_id: int,

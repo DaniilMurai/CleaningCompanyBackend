@@ -27,7 +27,6 @@ async def export_report_worker():
                 service = AdminExportReportService(admin=None, crud=crud)
 
                 report: ReportsExport | None = await service.get_next_waiting_report()
-                logger.info("Export report worker in cycle.")
                 if not report:
                     await asyncio.sleep(SECONDS)
                     continue
@@ -43,6 +42,7 @@ async def export_report_worker():
                     "end_date": report.end_date,
                     "timezone": report.timezone,
                     "user_id": report.user_id,
+                    "lang": report.lang
                 }
                 params = schemas.ReportExportParams.model_validate(data)
 

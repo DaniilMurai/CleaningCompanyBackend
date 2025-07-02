@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse
 
 import schemas
@@ -11,10 +13,12 @@ router = APIRouter(prefix="/export-reports", tags=['export-reports'])
 @router.post("/")
 async def create_export_reports(
         params: schemas.ReportExportParams,
-        lang: str = Depends(get_lang),
+        lang: Annotated[str, Query()],
         service: AdminExportReportService = Depends()
 ) -> int:
-    params.lang = lang
+    print(lang)
+    params.lang = get_lang(lang)
+    print(params.lang)
     return await service.export_reports(params)
 
 
@@ -26,9 +30,9 @@ async def download_export(
     return await service.download_report(export_id)
 
 
-# Не работает
 @router.get("/")
 async def get_export_reports(
+        params: Annotated[schemas.AdminGetListParams, Query()],
         service: AdminExportReportService = Depends()
-):
-    return await service.get_list()
+) -> list[schemas.ReportExportResponse]:
+    return await service.get_export_reports(params)
