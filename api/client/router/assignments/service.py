@@ -1,3 +1,7 @@
+from datetime import date
+
+from sqlalchemy import and_, func, select
+
 import exceptions
 import schemas
 from api.users.base.service import UserDepend
@@ -7,7 +11,7 @@ from db.crud.models.location import LocationCRUD
 from db.crud.models.room import RoomCRUD
 from db.crud.models.room_task import RoomTaskCRUD
 from db.crud.models.task import TaskCRUD
-from db.models import Report
+from db.models import DailyAssignment, Report
 
 
 class AssignmentService:
@@ -28,6 +32,15 @@ class AssignmentService:
         self.room_crud = room_crud
         self.task_crud = task_crud
         self.room_task_crud = room_task_crud
+
+    async def get_daily_assignments_dates(self):
+        assignment_dates = await self.daily_crud.db.execute(
+            select(func.date(DailyAssignment.date)).distinct()
+            .where(DailyAssignment.user_id == self.user.id)
+            .order_by(func.date(DailyAssignment.date))
+
+        )
+        return assignment_dates.scalars().all()
 
     async def update_daily_assignment_status(
             self, assignment_id: int, status: schemas.AssignmentStatus
@@ -51,8 +64,10 @@ class AssignmentService:
 
     async def get_daily_assignments_and_reports(
             self,
+            params: schemas.AssignmentAndReportsParams | None = None
     ) -> list[schemas.AssignmentReportResponse]:
-        assignments = await self.get_daily_assignments()
+        dates = params.dates if params.dates else None
+        assignments = await self.get_daily_assignments(dates)
         return await self.daily_crud.get_assignment_and_reports(assignments)
 
     async def update_daily_assignment(
@@ -119,11 +134,21 @@ class AssignmentService:
         )
 
     async def get_daily_assignments(
-            self,
+            self, dates: list[date] | None = None
     ) -> list[schemas.DailyAssignmentForUserResponse]:
 
         kwargs = {"user_id": self.user.id}
-        daily_assignments = await self.daily_crud.get_list(**kwargs)
+        if dates:
+            daily_assignments = (await self.daily_crud.db.execute(
+                select(DailyAssignment).where(
+                    and_(
+                        func.date(DailyAssignment.date).in_(dates),
+                        DailyAssignment.user_id == self.user.id
+                    )
+                )
+            )).scalars().all()
+        else:
+            daily_assignments = await self.daily_crud.get_list(**kwargs)
 
         result = []
         for d in daily_assignments:

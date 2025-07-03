@@ -1,5 +1,5 @@
 import enum
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, computed_field, field_validator
@@ -130,3 +130,9 @@ class ReportResponse(ReportBase):
 class AssignmentReportResponse(BaseModel):
     assignment: DailyAssignmentForUserResponse
     report: ReportResponse | None = None
+
+
+class AssignmentAndReportsParams(BaseModel):
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    dates: Optional[list[date]] = None

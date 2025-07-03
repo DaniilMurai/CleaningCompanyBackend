@@ -11,10 +11,10 @@ router = APIRouter(prefix="/daily-assignments", tags=["daily assignments"])
 
 @router.get("/")
 async def get_daily_assignments(
-        params: Annotated[schemas.AdminGetListParams, Query()],
+        params: Annotated[schemas.AdminAssignmentDatesGetListParams, Query()],
         service: AdminDailyAssignmentService = Depends()
 ) -> list[schemas.DailyAssignmentResponse]:
-    return await service.get_list(params)
+    return await service.get_daily_assignments(params)
 
 
 @router.post("/")

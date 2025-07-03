@@ -1,8 +1,12 @@
 import enum
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
 from pydantic import BaseModel, computed_field
+
+
+class AssignmentDatesFilter(BaseModel):
+    dates: list[date] | None = None
 
 
 class AdminGetListParams(BaseModel):
@@ -11,6 +15,10 @@ class AdminGetListParams(BaseModel):
     search: str | None = None
     order_by: str | None = None
     direction: str | None = None
+
+
+class AdminAssignmentDatesGetListParams(AdminGetListParams):
+    dates: Optional[list[date]] = None
 
 
 class LocationCreate(BaseModel):

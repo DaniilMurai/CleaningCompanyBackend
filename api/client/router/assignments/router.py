@@ -1,4 +1,8 @@
+from datetime import date
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
+from fastapi.params import Query
 
 import schemas
 from api.client.router.assignments.service import AssignmentService
@@ -8,9 +12,17 @@ router = APIRouter(prefix="/assignments", tags=["assignments"])
 
 @router.get("/daily-assignments")
 async def get_daily_assignments(
+        dates: Annotated[schemas.AssignmentDatesFilter, Query()],
         service: AssignmentService = Depends()
 ) -> list[schemas.DailyAssignmentForUserResponse]:
-    return await service.get_daily_assignments()
+    return await service.get_daily_assignments(dates.dates)
+
+
+@router.get("daily-assignments-dates")
+async def get_daily_assignments_dates(
+        service: AssignmentService = Depends()
+) -> list[date]:
+    return await service.get_daily_assignments_dates()
 
 
 @router.get("/daily-assignment")
@@ -23,9 +35,10 @@ async def get_daily_assignment_by_id(
 
 @router.get("/daily-assignments-and-reports")
 async def get_daily_assignments_and_reports(
+        params: Annotated[schemas.AssignmentAndReportsParams, Query()],
         service: AssignmentService = Depends()
 ) -> list[schemas.AssignmentReportResponse]:
-    return await service.get_daily_assignments_and_reports()
+    return await service.get_daily_assignments_and_reports(params)
 
 
 @router.get("/{report_id}")
