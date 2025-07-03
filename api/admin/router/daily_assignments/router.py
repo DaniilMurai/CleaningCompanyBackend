@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter
@@ -15,6 +16,13 @@ async def get_daily_assignments(
         service: AdminDailyAssignmentService = Depends()
 ) -> list[schemas.DailyAssignmentResponse]:
     return await service.get_daily_assignments(params)
+
+
+@router.get("/dates")
+async def get_daily_assignments_dates(
+        service: AdminDailyAssignmentService = Depends()
+) -> list[date]:
+    return await service.get_daily_assignments_dates()
 
 
 @router.post("/")

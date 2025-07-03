@@ -1,6 +1,9 @@
+from sqlalchemy import func, select
+
 import schemas
 from api.admin.base.service import AdminGenericService
 from db.crud.admin.daily_assignment import AdminDailyAssignmentCRUD
+from db.models import DailyAssignment
 
 
 class AdminDailyAssignmentService(
@@ -22,3 +25,10 @@ class AdminDailyAssignmentService(
         dates = params.dates if params.dates else None
         assignments = await self.crud.get_daily_assignments(dates)
         return [schemas.DailyAssignmentResponse.model_validate(a) for a in assignments]
+
+    async def get_daily_assignments_dates(self):
+        assignment_dates = await self.crud.db.execute(
+            select(func.date(DailyAssignment.date)).distinct()
+            .order_by(func.date(DailyAssignment.date))
+        )
+        return assignment_dates.scalars().all()
