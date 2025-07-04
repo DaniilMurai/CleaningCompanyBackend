@@ -5,7 +5,6 @@ from fastapi.responses import FileResponse
 
 import schemas
 from api.admin.router.export_reports.service import AdminExportReportService
-from api.depends.lang import get_lang
 
 router = APIRouter(prefix="/export-reports", tags=['export-reports'])
 
@@ -13,11 +12,9 @@ router = APIRouter(prefix="/export-reports", tags=['export-reports'])
 @router.post("/")
 async def create_export_reports(
         params: schemas.ReportExportParams,
-        lang: Annotated[str, Query()],
         service: AdminExportReportService = Depends()
 ) -> int:
-    print(lang)
-    params.lang = get_lang(lang)
+
     print(params.lang)
     return await service.export_reports(params)
 
