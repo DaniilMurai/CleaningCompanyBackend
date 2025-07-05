@@ -8,8 +8,6 @@ from core.reports.export.adapters.base import ReportsAdapter
 class CsvAdapter(ReportsAdapter):
 
     async def get_result(self, data) -> tuple[BytesIO, str]:
-        if not data:
-            raise ValueError("Нет данных для экспорта")
 
         for row in data:
             print(row)

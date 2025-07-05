@@ -21,6 +21,7 @@ async def export_report_worker():
     logger.info("Export report worker started.")
     os.makedirs(output_dir, exist_ok=True)
     while True:
+        report = None
         try:
             async with async_session_maker() as db:  # ✅ создаём сессию
                 crud = AdminExportReportCRUD(db=db)
@@ -47,7 +48,6 @@ async def export_report_worker():
                 params = schemas.ReportExportParams.model_validate(data)
 
                 result = await export_reports(params, crud)
-
                 if result and isinstance(result, tuple):
                     content, filename = result
                     file_path = os.path.join(
@@ -72,3 +72,6 @@ async def export_report_worker():
 
         except Exception as e:
             logger.error(f"Unexpected error in export_report_worker: {str(e)}")
+            await service.set_export_report_status(
+                report, schemas.ReportStatus.failed
+            )

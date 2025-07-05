@@ -11,5 +11,10 @@ from .adapters import ReportsAdapter
 
 async def export_reports(
         params: schemas.ReportExportParams, crud: AdminExportReportCRUD
-) -> tuple[BytesIO, str]:
-    return await ReportsAdapter.execute(params, crud)
+) -> tuple[BytesIO, str] | None:
+    try:
+        return await ReportsAdapter.execute(params, crud)
+    except ValueError as e:
+        if str(e) == "Нет данных для экспорта":
+            return None
+        raise

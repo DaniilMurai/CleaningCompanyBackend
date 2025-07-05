@@ -58,6 +58,8 @@ class ReportsAdapter(ABC):
 
     async def run(self):
         data = await self.get_data()
+        if not data:
+            raise ValueError("Нет данных для экспорта")
         return await self.get_result(data)
 
     @abstractmethod

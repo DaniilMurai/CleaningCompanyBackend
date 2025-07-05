@@ -14,17 +14,17 @@ class ReportExportParams(BaseModel):
     lang: Optional[str] = "ru"
 
 
-class ReportExportResponse(ReportExportParams):
-    id: int
-
-    model_config = ConfigDict(from_attributes=True)
-
-
 class ReportStatus(enum.Enum):
     waiting = "waiting"
     in_progress = "in_progress"
     failed = "failed"
     completed = "completed"
+
+
+class ReportExportResponse(ReportExportParams):
+    id: int
+    status: ReportStatus
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ReportExportRow(BaseModel):

@@ -62,7 +62,7 @@ class AdminExportReportService(
             path=export.file_path, media_type=f"text/{media_type}",
             filename=f"report_{export_id}.{media_type}"
         )
-    
+
     async def get_export_reports(
             self, params: schemas.AdminGetListParams | None = None
     ) -> list[schemas.ReportExportResponse]:
