@@ -12,7 +12,21 @@ class AdminReportCRUD(ReportCRUD):
     ):
         search = params.search if params else None
 
-        stmt = select(self.model).join(
+        conditions = []
+        if params.status:
+            conditions.append(self.model.status == params.status)
+
+        if search:
+            conditions.append(
+                or_(
+                    self.model.message.ilike(f"%{search}%"),
+                    self.user_model.full_name.ilike(f"%{search}%"),
+                    self.location_model.name.ilike(f"%{search}%"),
+                    self.location_model.address.ilike(f"%{search}%"),
+                )
+            )
+
+        stmt = select(self.model).where(*conditions).join(
             self.user_model, self.model.user_id == self.user_model.id,
         ).join(
             self.daily_assignment_model,
@@ -21,19 +35,6 @@ class AdminReportCRUD(ReportCRUD):
             self.location_model,
             self.daily_assignment_model.location_id == self.location_model.id
         ).options(selectinload(self.model.report_rooms))
-
-        if params.status:
-            stmt = stmt.where(self.model.status == params.status)
-
-        if search:
-            stmt = stmt.where(
-                or_(
-                    self.model.message.ilike(f"%{search}%"),
-                    self.user_model.full_name.ilike(f"%{search}%"),
-                    self.location_model.name.ilike(f"%{search}%"),
-                    self.location_model.address.ilike(f"%{search}%"),
-                )
-            )
 
         if params.order_by:
             field = params.order_by
@@ -45,10 +46,7 @@ class AdminReportCRUD(ReportCRUD):
         else:
             stmt = stmt.order_by(self.model.id.desc())
 
-        if params.offset:
-            stmt = stmt.offset(params.offset)
-        if params.limit:
-            stmt = stmt.limit(params.limit)
+        stmt = await self.paginate(stmt, params.offset, params.limit)
 
         result = await self.db.scalars(stmt)
         return [schemas.ReportResponse.model_validate(r, from_attributes=True) for r in
