@@ -37,7 +37,7 @@ async def lifespan(_):
         file_name="api.log",
     )
 
-    start_daily_assignment_scheduler()
+    await start_daily_assignment_scheduler()
 
     asyncio.create_task(export_report_worker())
 
