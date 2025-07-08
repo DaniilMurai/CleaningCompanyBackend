@@ -28,6 +28,12 @@ class AdminUsersService:
             **kwargs
         )
 
+    async def get_user_by_id(self, user_id: int) -> schemas.AdminReadUser:
+        user = await self.crud.get(user_id)
+        if not user:
+            raise exceptions.ObjectNotFoundByIdError("user", user_id)
+        return schemas.AdminReadUser.model_validate(user)
+
     async def create_user(self, data: schemas.RegisterUserData) -> schemas.InviteLink:
         self.check_access_to_role(data.role)
 

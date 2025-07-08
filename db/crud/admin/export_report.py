@@ -3,8 +3,9 @@ from datetime import datetime, timezone
 from dateutil.tz import tz
 from pydantic import ValidationError
 from pytz import utc
-from sqlalchemy import CursorResult, Result, and_, func, select
+from sqlalchemy import CursorResult, Result, and_, desc, func, select
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import joinedload
 
 import schemas
 from db.crud.models.export_report import ExportReportCRUD
@@ -129,6 +130,20 @@ class AdminExportReportCRUD(ExportReportCRUD):
 
         return valid_rows
 
+    async def get_export_reports(
+            self, params: schemas.AdminGetListParams | None = None
+    ):
+        stmt = (
+            select(self.model)
+            .order_by(desc(self.model.id))
+            .options(
+                joinedload(self.model.user)
+            ))
+
+        stmt = await self.paginate(stmt, params.offset, params.limit)
+        stmt = await self.db.execute(stmt)
+        return stmt.scalars().all()
+
     async def get_next_waiting_report(self) -> CursorResult | Result | None:
         try:
             report = await self.db.execute(
@@ -154,18 +169,3 @@ class AdminExportReportCRUD(ExportReportCRUD):
             )
         else:
             return await self.update(export_report, {"status": status})
-
-    # async def get_reports_by_date(self, params: schemas.ReportExportParams) -> \
-    #         Sequence[Report]:
-    #
-    #     conditions = [
-    #         func.date(Report.start_time) >= params.start_date,
-    #         func.date(Report.end_time) <= params.end_date
-    #     ]
-    #
-    #     if params.user_id:
-    #         conditions.append(Report.user_id == params.user_id)
-    #
-    #     reports = await self.db.execute(select(Report).where(and_(*conditions)))
-    #
-    #     return reports.scalars().all()

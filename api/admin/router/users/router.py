@@ -17,6 +17,14 @@ async def get_users(
     return await admin_service.get_users(params)
 
 
+@router.get("/{user_id}")
+async def get_user_by_id(
+        user_id: int,
+        admin_service: AdminUsersService = Depends()
+) -> schemas.AdminReadUser:
+    return await admin_service.get_user_by_id(user_id)
+
+
 @router.post("/")
 async def create_user(
         userdata: schemas.RegisterUserData,

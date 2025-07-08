@@ -27,6 +27,14 @@ async def download_export(
     return await service.download_report(export_id)
 
 
+@router.get("/{export_id}/type")
+async def export_type(
+        export_id: int,
+        service: AdminExportReportService = Depends()
+) -> schemas.FileResponse:
+    return await service.get_export_type(export_id)
+
+
 @router.get("/")
 async def get_export_reports(
         params: Annotated[schemas.AdminGetListParams, Query()],

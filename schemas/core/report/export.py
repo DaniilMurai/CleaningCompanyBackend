@@ -5,13 +5,16 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict, computed_field, model_validator
 
 
-class ReportExportParams(BaseModel):
+class ReportExportParamsBase(BaseModel):
     export_type: str
     start_date: date
     end_date: date
     timezone: str = "UTC"
-    user_id: int | None = None
     lang: Optional[str] = "ru"
+
+
+class ReportExportParams(ReportExportParamsBase):
+    user_id: int | None = None
 
 
 class ReportStatus(enum.Enum):
@@ -21,9 +24,10 @@ class ReportStatus(enum.Enum):
     completed = "completed"
 
 
-class ReportExportResponse(ReportExportParams):
+class ReportExportResponse(ReportExportParamsBase):
     id: int
     status: ReportStatus
+    user_full_name: str | None = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -58,3 +62,9 @@ class ReportExportRow(BaseModel):
     @computed_field
     def duration(self) -> timedelta:
         return self.end_time - self.start_time
+
+
+class FileResponse(BaseModel):
+    path: str
+    media_type: str
+    filename: str

@@ -1,6 +1,6 @@
 import os.path
 
-from starlette.responses import FileResponse
+from fastapi.responses import FileResponse
 
 import exceptions
 import schemas
@@ -37,8 +37,10 @@ class AdminExportReportService(
     ):
         return await self.crud.set_report_status(report, status, file_path)
 
-    async def download_report(self, export_id: int) -> FileResponse:
+    async def get_export_type(self, export_id: int) -> schemas.FileResponse:
         export = await self.crud.get(export_id)
+        if not export:
+            raise exceptions.ObjectNotFoundByIdError("export_report", export_id)
         if export.status == schemas.ReportStatus.failed:
             raise exceptions.ReportExportStatusFailed
         if export.status != schemas.ReportStatus.completed:
@@ -57,16 +59,31 @@ class AdminExportReportService(
         media_type = media_type[::-1]
 
         print("media_type: ", media_type)
-
-        return FileResponse(
+        return schemas.FileResponse(
             path=export.file_path, media_type=f"text/{media_type}",
             filename=f"report_{export_id}.{media_type}"
+        )
+
+    async def download_report(self, export_id: int) -> FileResponse:
+        obj = await self.get_export_type(export_id)
+        return FileResponse(
+            path=obj.path, media_type=obj.media_type,
+            filename=obj.filename
         )
 
     async def get_export_reports(
             self, params: schemas.AdminGetListParams | None = None
     ) -> list[schemas.ReportExportResponse]:
-        export_reports = await self.crud.get_list(**params.model_dump())
-        return [schemas.ReportExportResponse.model_validate(
-            export_report, from_attributes=True
-        ) for export_report in export_reports]
+        export_reports = await self.crud.get_export_reports(params)
+
+        return [schemas.ReportExportResponse(
+            id=report.id,
+            status=report.status,
+            export_type=report.export_type,
+            start_date=report.start_date,
+            end_date=report.end_date,
+            timezone=report.timezone,
+            lang=report.lang,
+            user_full_name=report.user.full_name if report.user else None
+
+        ) for report in export_reports]

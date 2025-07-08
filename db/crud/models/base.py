@@ -1,6 +1,6 @@
 from typing import Any, Generic, List, Type, TypeVar
 
-from sqlalchemy import asc, desc, exists, or_, select
+from sqlalchemy import Select, asc, desc, exists, or_, select
 from sqlalchemy.orm import DeclarativeBase
 
 import exceptions
@@ -23,6 +23,19 @@ class BaseModelCrud(CRUD, Generic[T]):
             .filter_by(**kwargs)
             .filter_by(is_deleted=False)
         )
+
+    @staticmethod
+    async def paginate(
+            stmt: Select[tuple[Base]], offset: int | None = None,
+            limit: int | None = None
+    ):
+        print("offset", offset)
+        print("limit", limit)
+        if offset:
+            stmt = stmt.offset(offset)
+        if limit:
+            stmt = stmt.limit(limit)
+        return stmt
 
     async def get(
             self, id: Any = None, model: Type[Base] | None = None, f: str = "id",
@@ -87,10 +100,7 @@ class BaseModelCrud(CRUD, Generic[T]):
         else:
             stmt = stmt.order_by(desc(current_model.id))
 
-        if offset:
-            stmt = stmt.offset(offset)
-        if limit:
-            stmt = stmt.limit(limit)
+        stmt = await self.paginate(stmt, offset, limit)
 
         result = await self.db.scalars(stmt)
         return result.all()

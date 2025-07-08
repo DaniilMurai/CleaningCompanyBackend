@@ -10,7 +10,6 @@ class AdminReportCRUD(ReportCRUD):
     async def get_reports_crud(
             self, params: schemas.AdminReportFilterParams | None = None,
     ):
-
         search = params.search if params else None
 
         stmt = select(self.model).join(
