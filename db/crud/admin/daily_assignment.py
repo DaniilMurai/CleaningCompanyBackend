@@ -1,10 +1,10 @@
 from datetime import date
 from typing import Optional, Sequence
 
-from sqlalchemy import func, select, update
+from sqlalchemy import and_, func, select, update
 
 from db.crud.models.daily_assignment import DailyAssignmentCRUD
-from db.models import DailyAssignment
+from db.models import DailyAssignment, Report
 from schemas import AssignmentStatus
 
 
@@ -25,15 +25,41 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
 
     async def mark_expired_assignments_as_not_completed(self):
         today = date.today()
-        print("mark_expired_assignments_as_not_completed")
-        stmt = (update(DailyAssignment)
-                .where(
+
+        conditions = and_(
             DailyAssignment.status == AssignmentStatus.not_started,
             DailyAssignment.date < today,
             DailyAssignment.is_deleted.is_(False)
         )
-                .values(status=AssignmentStatus.expired)
-                )
 
-        await self.db.execute(stmt)
+        print("mark_expired_assignments_as_not_completed")
+        assignment_stmt = (update(DailyAssignment)
+                           .where(
+            and_(
+                DailyAssignment.status == AssignmentStatus.not_started,
+                DailyAssignment.date < today,
+                DailyAssignment.is_deleted.is_(False)
+            )
+        )
+                           .values(status=AssignmentStatus.expired)
+                           .execution_options(synchronize_session="fetch")
+                           )
+
+        report_stmt = (update(Report)
+                       .where(
+            and_(
+                Report.daily_assignment_id.in_(
+                    select(DailyAssignment.id).where(
+                        DailyAssignment.status == AssignmentStatus.expired,
+                        DailyAssignment.date < today,
+                        DailyAssignment.is_deleted.is_(False)
+                        )
+                ), Report.status != AssignmentStatus.expired
+            )
+        ).values(status=AssignmentStatus.expired)
+                       .execution_options(synchronize_session="fetch")
+                       )
+
+        await self.db.execute(assignment_stmt)
+        await self.db.execute(report_stmt)
         await self.db.commit()

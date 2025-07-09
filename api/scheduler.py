@@ -15,6 +15,6 @@ async def start_daily_assignment_scheduler():
         scheduler.add_job(
             crud.mark_expired_assignments_as_not_completed,
             'cron',
-            hour=2, minute=1
+            hour=0, minute=1
         )
         scheduler.start()
