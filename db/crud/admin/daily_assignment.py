@@ -25,7 +25,7 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
 
     async def mark_expired_assignments_as_not_completed(self):
         today = date.today()
-
+        print("mark_expired_assignments_as_not_completed")
         stmt = (update(DailyAssignment)
                 .where(
             DailyAssignment.status == AssignmentStatus.not_started,
