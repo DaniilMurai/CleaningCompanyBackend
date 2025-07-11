@@ -14,7 +14,6 @@ class ExcelAdapter(ReportsAdapter):
 
         output = BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
-            # Вставь перед df.to_excel(writer, index=False)
             for col in df.select_dtypes(include=["datetimetz"]).columns:
                 df[col] = df[col].dt.tz_localize(None)
 
