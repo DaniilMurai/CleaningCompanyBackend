@@ -15,20 +15,20 @@ sudo apt install -y postgresql postgresql-contrib redis
 sudo apt install -y nginx  # Если нужно проксировать запросы
 
 
-2. Настройка базы данных PostgreSQL
+##2. Настройка базы данных PostgreSQL
 
 sudo -u postgres psql -c "CREATE DATABASE yourdb;"
 sudo -u postgres psql -c "CREATE USER youruser WITH PASSWORD 'yourpassword';"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE yourdb TO youruser;"
 
 
-3. Настройка Redis
+##3. Настройка Redis
 
 sudo systemctl enable redis-server
 sudo systemctl start redis-server
 
 
-4. Клонирование и настройка проекта
+##4. Клонирование и настройка проекта
 
 
 git clone https://github.com/DaniilMurai/CleaningCompanyBackend
@@ -38,7 +38,7 @@ source venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 
-5. Создание файла .env
+##5. Создание файла .env
 Создайте .env файл в корне проекта:
 
 DATABASE_URL=postgresql+asyncpg://youruser:yourpassword@localhost:5432/yourdb
@@ -52,7 +52,7 @@ DEFAULT_LANG=en
 LOGS_DIR=logs
 LOCALES_PATH=locales
 
-6. Миграции базы данных
+##6. Миграции базы данных
 Создание миграций:
 
 alembic revision --autogenerate -m "initial"
@@ -62,12 +62,12 @@ alembic revision --autogenerate -m "initial"
 alembic upgrade head
 
 
-7. Создание суперпользователя
+##7. Создание суперпользователя
 
 python -m manage createsuperadmin
 (следуйте инструкциям в терминале)
 
-8. Запуск приложения
+##8. Запуск приложения
 Основное приложение (FastAPI):
 
 python run.py
@@ -77,7 +77,7 @@ Worker:
 python run_worker.py
 
 
-9. Настройка Nginx (опционально)
+##9. Настройка Nginx (опционально)
 Создайте файл /etc/nginx/sites-available/yourdomain.com:
 
 server {
@@ -97,7 +97,7 @@ sudo ln -s /etc/nginx/sites-available/yourdomain.com /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 
-10. Настройка Supervisor (для управления процессами)
+##10. Настройка Supervisor (для управления процессами)
 Установите Supervisor:
 
 sudo apt install -y supervisor
