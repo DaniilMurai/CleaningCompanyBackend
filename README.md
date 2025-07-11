@@ -1,10 +1,11 @@
 ````markdown
 # 🚀 Деплой FastAPI-проекта на WPS хостинг
 
-[![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)  
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.95%2B-green)](https://fastapi.tiangolo.com/)  
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15%2B-blue)](https://www.postgresql.org/)  
-[![Redis](https://img.shields.io/badge/Redis-7%2B-red)](https://redis.io/)  
+
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-green)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15%2B-blue)
+![Redis](https://img.shields.io/badge/Redis-7%2B-red)
+![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
 
 ---
 
