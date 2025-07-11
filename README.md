@@ -245,5 +245,3 @@ sudo supervisorctl start all
 > * Запуск через `run.py` и `run_worker.py`
 > * Опциональный Nginx и Supervisor
 > * Команду для создания суперпользователя
-
-```
