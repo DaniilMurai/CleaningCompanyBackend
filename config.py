@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     LOGGER_NAME: str = "neuer-standard"
     LOCALES_PATH: str = "locales"
     OUTPUT_REPORTS_EXPORTS_DIR: str = os.path.join(os.getcwd(), "exports")
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
 
     class Config:
         env_file = ".env"

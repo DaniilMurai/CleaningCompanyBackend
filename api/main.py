@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -9,7 +8,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 import exceptions
 from config import settings
-from core.reports.export.worker import export_report_worker
 from db.models import create_tables
 from loggers.setup import setup_logger
 from utils.api import setup_uvicorn_loggers
@@ -39,7 +37,7 @@ async def lifespan(_):
 
     await start_daily_assignment_scheduler()
 
-    asyncio.create_task(export_report_worker())
+    # asyncio.create_task(export_report_worker())
 
     yield
 

@@ -1,12 +1,15 @@
+import json
 import os.path
 
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 
 import exceptions
+import loggers
 import schemas
 from api.admin.base.service import AdminGenericService
 from db.crud.admin.export_report import AdminExportReportCRUD
 from db.models import ReportsExport
+from redis_client import redis
 from schemas import ReportStatus
 
 
@@ -70,6 +73,25 @@ class AdminExportReportService(
             path=obj.path, media_type=obj.media_type,
             filename=obj.filename
         )
+
+    @staticmethod
+    async def stream_export_reports():
+        pubsub = redis.pubsub()
+        await pubsub.subscribe("export_report")
+        logger = loggers.JSONLogger("stream_export_reports")
+
+        async def event_generator():
+            try:
+                async for message in pubsub.listen():
+                    data = json.dumps(message)
+                    logger.info(data)
+                    yield f"data: {data}\n\n"
+            except Exception as e:
+                logger.error("An error occurred while handling redis messages: ", e)
+            finally:
+                await redis.aclose()
+
+        return StreamingResponse(event_generator(), media_type="text/event-stream")
 
     async def get_export_reports(
             self, params: schemas.AdminGetListParams | None = None

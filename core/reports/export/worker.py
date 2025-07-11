@@ -8,6 +8,7 @@ from db.crud.admin.export_report import AdminExportReportCRUD
 from db.models import ReportsExport
 from db.session import async_session_maker
 from loggers import JSONLogger
+from redis_client import redis
 from .functions import export_reports
 
 SECONDS = 1
@@ -23,7 +24,7 @@ async def export_report_worker():
     while True:
         report = None
         try:
-            async with async_session_maker() as db:  # ✅ создаём сессию
+            async with async_session_maker() as db:
                 crud = AdminExportReportCRUD(db=db)
                 service = AdminExportReportService(admin=None, crud=crud)
 
@@ -36,6 +37,8 @@ async def export_report_worker():
                 await service.set_export_report_status(
                     report, schemas.ReportStatus.in_progress
                 )
+                # redis
+                await redis.publish("export_report", "status_update")
 
                 data = {
                     "export_type": report.export_type,
@@ -60,6 +63,8 @@ async def export_report_worker():
                     await service.set_export_report_status(
                         report, schemas.ReportStatus.completed, file_path=file_path
                     )
+                    await redis.publish("export_report", "status_update")
+
                     logger.info(
                         f"Report ID={report.id} exported successfully to "
                         f"{file_path}."
@@ -69,9 +74,12 @@ async def export_report_worker():
                     await service.set_export_report_status(
                         report, schemas.ReportStatus.failed
                     )
+                    await redis.publish("export_report", "status_update")
+
 
         except Exception as e:
             logger.error(f"Unexpected error in export_report_worker: {str(e)}")
             await service.set_export_report_status(
                 report, schemas.ReportStatus.failed
             )
+            await redis.publish("export_report", "status_update")

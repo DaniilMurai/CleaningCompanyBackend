@@ -8,7 +8,7 @@ from core.reports.export.adapters.base import ReportsAdapter
 class ExcelAdapter(ReportsAdapter):
 
     async def get_result(self, data) -> tuple[BytesIO, str]:
-        rows = [{k: v for k, v in row.__dict__.items() if not k.startswith("_")} for row
+        rows = [{k: v for k, v in row.items() if not k.startswith("_")} for row
                 in data]
         df = pd.DataFrame(rows)
 

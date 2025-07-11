@@ -35,6 +35,13 @@ async def export_type(
     return await service.get_export_type(export_id)
 
 
+@router.get("/sse")
+async def stream_export_reports(
+        service: AdminExportReportService = Depends()
+):
+    return await service.stream_export_reports()
+
+
 @router.get("/")
 async def get_export_reports(
         params: Annotated[schemas.AdminGetListParams, Query()],
