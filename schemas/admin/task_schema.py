@@ -148,14 +148,14 @@ class AssignmentStatus(enum.Enum):
 class DailyAssignmentCreate(BaseModel):
     location_id: int
     user_id: int
-    date: datetime
+    date: date
     admin_note: str | None = None
 
 
 class DailyAssignmentUpdate(BaseModel):
     location_id: int | None = None
     user_id: int | None = None
-    date: datetime | None = None
+    date: Optional[date] = None
     admin_note: str | None = None
     user_note: str | None = None
 
@@ -170,7 +170,7 @@ class DailyAssignmentResponse(BaseModel):
     id: int
     location_id: int
     user_id: int
-    date: datetime
+    date: date
     admin_note: str | None = None
     user_note: str | None = None
     start_time: datetime | None = None
@@ -187,7 +187,7 @@ class DailyAssignmentForUserResponse(BaseModel):
     tasks: list[TaskResponse] = []
     room_tasks: list[RoomTaskResponse] = []
     user_id: int
-    date: datetime
+    date: date
     status: AssignmentStatus
     admin_note: str | None = None
     user_note: str | None = None

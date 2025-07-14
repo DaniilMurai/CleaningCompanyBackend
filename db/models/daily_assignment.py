@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from sqlalchemy import (
-    Column, ColumnElement, DateTime, Enum, ForeignKey, String,
+    Column, ColumnElement, Date, Enum, ForeignKey, String,
     TIMESTAMP, func,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -14,7 +14,7 @@ from db.base import Base
 class DailyAssignment(Base):
     location_id = Column(ForeignKey("locations.id"), nullable=False)
     user_id = Column(ForeignKey("users.id"), nullable=False)
-    date = Column(DateTime(timezone=True), nullable=False)
+    date = Column(Date, nullable=False)
     admin_note = Column(String)
     user_note = Column(String)
     start_time = Column(TIMESTAMP(timezone=True))
