@@ -183,6 +183,11 @@ class DailyAssignmentResponse(BaseModel):
         from_attributes = True
 
 
+class AssignmentGroup(BaseModel):
+    assignments_amount: int
+    interval_days: int | None = None
+
+
 class DailyAssignmentForUserResponse(BaseModel):
     id: int
     group_uuid: UUID | None = None

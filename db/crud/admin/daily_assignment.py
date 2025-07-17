@@ -6,6 +6,7 @@ from sqlalchemy import and_, func, select, update
 from sqlalchemy.exc import SQLAlchemyError
 
 import exceptions
+import schemas
 from db.crud.models.daily_assignment import DailyAssignmentCRUD
 from db.models import DailyAssignment, Report
 from schemas import AssignmentStatus
@@ -29,8 +30,9 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
 
         return daily_assignments.scalars().all()
 
-    async def check_assignment_group(self, daily_assignments_id: int) -> Sequence[
-        DailyAssignment]:
+    async def check_assignment_group(
+            self, daily_assignments_id: int
+    ) -> schemas.AssignmentGroup:
         assignment = await self.get(daily_assignments_id)
         if not assignment:
             raise exceptions.ObjectNotFoundByIdError("assignment", daily_assignments_id)
@@ -40,8 +42,20 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
                 self.model.group_uuid == assignment.group_uuid,
                 self.model.date >= assignment.date
             )
+        ).order_by(self.model.date)
+        assignments = (await self.db.execute(stmt)).scalars().all()
+
+        if len(assignments) >= 2:
+            first = assignments[0]
+            second = assignments[1]
+            days_diff = (second.date - first.date).days
+            return schemas.AssignmentGroup.model_validate(
+                {"assignments_amount": len(assignments), "interval_days": days_diff}
+            )
+
+        return schemas.AssignmentGroup.model_validate(
+            {{"assignments_amount": len(assignments), "interval_days": None}}
         )
-        return (await self.db.execute(stmt)).scalars().all()
 
     async def delete_daily_assignments_group(self, group_uuid: uuid.uuid4()):
         try:

@@ -29,7 +29,7 @@ async def get_daily_assignments_dates(
 async def check_assignment_group(
         daily_assignment_id: int,
         service: AdminDailyAssignmentService = Depends()
-) -> list[schemas.DailyAssignmentResponse]:
+) -> schemas.AssignmentGroup:
     return await service.check_assignment_group(daily_assignment_id)
 
 

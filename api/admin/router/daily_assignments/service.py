@@ -5,7 +5,6 @@ import schemas
 from api.admin.base.service import AdminGenericService
 from db.crud.admin.daily_assignment import AdminDailyAssignmentCRUD
 from db.models import DailyAssignment
-from schemas import DailyAssignmentResponse
 
 
 class AdminDailyAssignmentService(
@@ -39,11 +38,10 @@ class AdminDailyAssignmentService(
         )
         return assignment_dates.scalars().all()
 
-    async def check_assignment_group(self, daily_assignments_id: int) -> list[
-        DailyAssignmentResponse]:
-        assignments = await self.crud.check_assignment_group(daily_assignments_id)
-        return [schemas.DailyAssignmentResponse.model_validate(assignment) for
-                assignment in assignments]
+    async def check_assignment_group(
+            self, daily_assignments_id: int
+    ) -> schemas.AssignmentGroup:
+        return await self.crud.check_assignment_group(daily_assignments_id)
 
     async def delete_daily_assignments_group(
             self, daily_assignments_id: int
