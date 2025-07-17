@@ -54,7 +54,7 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
             )
 
         return schemas.AssignmentGroup.model_validate(
-            {{"assignments_amount": len(assignments), "interval_days": None}}
+            {"assignments_amount": len(assignments), "interval_days": None}
         )
 
     async def delete_daily_assignments_group(self, group_uuid: uuid.uuid4()):
