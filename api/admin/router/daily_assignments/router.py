@@ -56,3 +56,11 @@ async def delete_daily_assignment(
         service: AdminDailyAssignmentService = Depends()
 ) -> schemas.SuccessResponse:
     return await service.delete(daily_assignment_id)
+
+
+@router.delete("/group")
+async def delete_daily_assignments_group(
+        daily_assignment_id: int,
+        service: AdminDailyAssignmentService = Depends()
+) -> schemas.SuccessResponse:
+    return await service.delete_daily_assignments_group(daily_assignment_id)

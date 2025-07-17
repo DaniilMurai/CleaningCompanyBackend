@@ -1,12 +1,13 @@
 import enum
-from datetime import date, datetime
+from datetime import date as dt_date, datetime
 from typing import Optional
+from uuid import UUID, uuid4
 
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, Field, computed_field
 
 
 class AssignmentDatesFilter(BaseModel):
-    dates: list[date] | None = None
+    dates: list[dt_date] | None = None
 
 
 class AdminGetListParams(BaseModel):
@@ -18,7 +19,7 @@ class AdminGetListParams(BaseModel):
 
 
 class AdminAssignmentDatesGetListParams(AdminGetListParams):
-    dates: Optional[list[date]] = None
+    dates: Optional[list[dt_date]] = None
 
 
 class LocationCreate(BaseModel):
@@ -146,16 +147,17 @@ class AssignmentStatus(enum.Enum):
 
 
 class DailyAssignmentCreate(BaseModel):
+    group_uuid: UUID = Field(default_factory=uuid4)
     location_id: int
     user_id: int
-    date: date
+    date: dt_date
     admin_note: str | None = None
 
 
 class DailyAssignmentUpdate(BaseModel):
     location_id: int | None = None
     user_id: int | None = None
-    date: Optional[date] = None
+    date: dt_date | None = None
     admin_note: str | None = None
     user_note: str | None = None
 
@@ -168,9 +170,10 @@ class DailyAssignmentForUserUpdate(BaseModel):
 
 class DailyAssignmentResponse(BaseModel):
     id: int
+    group_uuid: UUID | None = None
     location_id: int
     user_id: int
-    date: date
+    date: dt_date
     admin_note: str | None = None
     user_note: str | None = None
     start_time: datetime | None = None
@@ -182,12 +185,13 @@ class DailyAssignmentResponse(BaseModel):
 
 class DailyAssignmentForUserResponse(BaseModel):
     id: int
+    group_uuid: UUID | None = None
     location: LocationResponse
     rooms: list[RoomResponse] = []
     tasks: list[TaskResponse] = []
     room_tasks: list[RoomTaskResponse] = []
     user_id: int
-    date: date
+    date: dt_date
     status: AssignmentStatus
     admin_note: str | None = None
     user_note: str | None = None

@@ -1,9 +1,11 @@
+import uuid
 from datetime import timedelta
 
 from sqlalchemy import (
     Column, ColumnElement, Date, Enum, ForeignKey, String,
     TIMESTAMP, func,
 )
+from sqlalchemy.dialects.postgresql.base import UUID
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
@@ -12,6 +14,12 @@ from db.base import Base
 
 
 class DailyAssignment(Base):
+    group_uuid = Column(
+        UUID(as_uuid=True),
+        default=uuid.uuid4,
+        server_default=func.uuid_generate_v4(),
+        nullable=False
+    )
     location_id = Column(ForeignKey("locations.id"), nullable=False)
     user_id = Column(ForeignKey("users.id"), nullable=False)
     date = Column(Date, nullable=False)

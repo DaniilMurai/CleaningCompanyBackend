@@ -1,7 +1,9 @@
+import uuid
 from datetime import date
 from typing import Optional, Sequence
 
 from sqlalchemy import and_, func, select, update
+from sqlalchemy.exc import SQLAlchemyError
 
 from db.crud.models.daily_assignment import DailyAssignmentCRUD
 from db.models import DailyAssignment, Report
@@ -15,13 +17,27 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
         if dates:
             daily_assignments = await self.db.execute(
                 select(DailyAssignment).where(
-                    func.date(DailyAssignment.date).in_(dates)
+                    and_(
+                        func.date(DailyAssignment.date).in_(dates),
+                        DailyAssignment.is_deleted == False
+                        )
                 )
             )
         else:
             daily_assignments = await self.db.execute(select(DailyAssignment))
 
         return daily_assignments.scalars().all()
+
+    async def delete_daily_assignments_group(self, group_uuid: uuid.uuid4()):
+        try:
+            stmt = update(DailyAssignment).where(
+                DailyAssignment.group_uuid == group_uuid
+            ).values(is_deleted=True)
+            await self.db.execute(stmt)
+            await self.db.commit()
+        except SQLAlchemyError as e:
+            await self.db.rollback()
+            raise e
 
     async def mark_expired_assignments_as_not_completed(self):
         today = date.today()
@@ -53,7 +69,7 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
                         DailyAssignment.status == AssignmentStatus.expired,
                         DailyAssignment.date < today,
                         DailyAssignment.is_deleted.is_(False)
-                        )
+                    )
                 ), Report.status != AssignmentStatus.expired
             )
         ).values(status=AssignmentStatus.expired)
