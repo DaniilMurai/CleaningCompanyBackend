@@ -25,6 +25,14 @@ async def get_daily_assignments_dates(
     return await service.get_daily_assignments_dates()
 
 
+@router.get("/check-group")
+async def check_assignment_group(
+        daily_assignment_id: int,
+        service: AdminDailyAssignmentService = Depends()
+) -> list[schemas.DailyAssignmentResponse]:
+    return await service.check_assignment_group(daily_assignment_id)
+
+
 @router.post("/")
 async def create_daily_assignment(
         data: schemas.DailyAssignmentCreate,

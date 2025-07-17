@@ -5,6 +5,7 @@ from typing import Optional, Sequence
 from sqlalchemy import and_, func, select, update
 from sqlalchemy.exc import SQLAlchemyError
 
+import exceptions
 from db.crud.models.daily_assignment import DailyAssignmentCRUD
 from db.models import DailyAssignment, Report
 from schemas import AssignmentStatus
@@ -20,13 +21,27 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
                     and_(
                         func.date(DailyAssignment.date).in_(dates),
                         DailyAssignment.is_deleted == False
-                        )
+                    )
                 )
             )
         else:
             daily_assignments = await self.db.execute(select(DailyAssignment))
 
         return daily_assignments.scalars().all()
+
+    async def check_assignment_group(self, daily_assignments_id: int) -> Sequence[
+        DailyAssignment]:
+        assignment = await self.get(daily_assignments_id)
+        if not assignment:
+            raise exceptions.ObjectNotFoundByIdError("assignment", daily_assignments_id)
+        stmt = select(self.model).where(
+            and_(
+                self.model.is_deleted == False,
+                self.model.group_uuid == assignment.group_uuid,
+                self.model.date >= assignment.date
+            )
+        )
+        return (await self.db.execute(stmt)).scalars().all()
 
     async def delete_daily_assignments_group(self, group_uuid: uuid.uuid4()):
         try:
