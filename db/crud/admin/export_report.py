@@ -49,7 +49,8 @@ class AdminExportReportCRUD(ExportReportCRUD):
         schemas.ReportExportRow]:
         conditions = [
             func.date(Report.start_time) >= params.start_date,
-            func.date(Report.end_time) <= params.end_date
+            func.date(Report.end_time) <= params.end_date,
+            Report.is_deleted == False
         ]
 
         if params.user_id:
@@ -135,6 +136,7 @@ class AdminExportReportCRUD(ExportReportCRUD):
     ):
         stmt = (
             select(self.model)
+            .where(self.model.is_deleted == False)
             .order_by(desc(self.model.id))
             .options(
                 joinedload(self.model.user)
@@ -149,7 +151,10 @@ class AdminExportReportCRUD(ExportReportCRUD):
             report = await self.db.execute(
                 select(self.model)
                 .where(
-                    self.model.status == schemas.ReportStatus.waiting
+                    and_(
+                        self.model.status == schemas.ReportStatus.waiting,
+                        self.model.is_deleted == False
+                    )
                 )
                 .order_by(self.model.id.asc())
                 .limit(1)

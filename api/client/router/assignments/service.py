@@ -36,7 +36,12 @@ class AssignmentService:
     async def get_daily_assignments_dates(self):
         assignment_dates = await self.daily_crud.db.execute(
             select(func.date(DailyAssignment.date)).distinct()
-            .where(DailyAssignment.user_id == self.user.id)
+            .where(
+                and_(
+                    DailyAssignment.is_deleted == False,
+                    DailyAssignment.user_id == self.user.id
+                )
+            )
             .order_by(func.date(DailyAssignment.date))
 
         )
@@ -142,6 +147,7 @@ class AssignmentService:
             daily_assignments = (await self.daily_crud.db.execute(
                 select(DailyAssignment).where(
                     and_(
+                        DailyAssignment.is_deleted == False,
                         func.date(DailyAssignment.date).in_(dates),
                         DailyAssignment.user_id == self.user.id
                     )

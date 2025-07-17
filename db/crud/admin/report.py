@@ -1,4 +1,4 @@
-from sqlalchemy import or_, select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import selectinload
 
 import schemas
@@ -25,7 +25,9 @@ class AdminReportCRUD(ReportCRUD):
                 )
             )
 
-        stmt = select(self.model).where(*conditions).join(
+        stmt = select(self.model).where(
+            and_(*conditions, self.model.is_deleted == False)
+        ).join(
             self.user_model, self.model.user_id == self.user_model.id,
         ).join(
             self.daily_assignment_model,
