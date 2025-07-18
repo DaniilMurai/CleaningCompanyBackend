@@ -46,11 +46,14 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
         assignments = (await self.db.execute(stmt)).scalars().all()
 
         if len(assignments) >= 2:
-            first = assignments[0]
-            second = assignments[1]
-            days_diff = (second.date - first.date).days
+
+            min_interval = min(
+                (assignments[i + 1].date - assignments[i].date).days for i in
+                range(len(assignments) - 1)
+            )
+
             return schemas.AssignmentGroup.model_validate(
-                {"assignments_amount": len(assignments), "interval_days": days_diff}
+                {"assignments_amount": len(assignments), "interval_days": min_interval}
             )
 
         return schemas.AssignmentGroup.model_validate(
