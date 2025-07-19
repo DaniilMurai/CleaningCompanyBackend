@@ -81,7 +81,7 @@ class RoomResponse(BaseModel):
 class TaskCreate(BaseModel):
     title: str
     description: str | None = None
-    frequency: int  # в днях
+    frequency: int
 
 
 class TaskUpdate(BaseModel):
@@ -188,11 +188,19 @@ class AssignmentGroup(BaseModel):
     interval_days: int | None = None
 
 
+class DailyExtraTaskResponse(BaseModel):
+    id: int  # id из DailyExtraTask
+    task: TaskResponse
+    room: RoomResponse
+    completed: bool | None = None  # если добавишь в модель
+
+
 class DailyAssignmentForUserResponse(BaseModel):
     id: int
     group_uuid: UUID | None = None
     location: LocationResponse
     rooms: list[RoomResponse] = []
+    assigned_tasks: list[DailyExtraTaskResponse] | None = None  # = []
     tasks: list[TaskResponse] = []
     room_tasks: list[RoomTaskResponse] = []
     user_id: int
@@ -242,12 +250,11 @@ class DailyExtraTaskUpdate(BaseModel):
     room_id: int | None = None
     task_id: int | None = None
 
-
-class DailyExtraTaskResponse(BaseModel):
-    id: int
-    daily_assignment_id: int
-    room_id: int
-    task_id: int
-
-    class Config:
-        from_attributes = True
+# class DailyExtraTaskResponse(BaseModel):
+#     id: int
+#     daily_assignment_id: int
+#     room_id: int
+#     task_id: int
+#
+#     class Config:
+#         from_attributes = True

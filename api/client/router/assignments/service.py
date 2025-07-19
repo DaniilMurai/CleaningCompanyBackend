@@ -7,6 +7,7 @@ import schemas
 from api.users.base.service import UserDepend
 from db.crud import UserCRUD
 from db.crud.models.daily_assignment import DailyAssignmentCRUD
+from db.crud.models.daily_extra_task import DailyExtraTaskCRUD
 from db.crud.models.location import LocationCRUD
 from db.crud.models.room import RoomCRUD
 from db.crud.models.room_task import RoomTaskCRUD
@@ -24,6 +25,7 @@ class AssignmentService:
             room_crud: RoomCRUD.depends(),
             task_crud: TaskCRUD.depends(),
             room_task_crud: RoomTaskCRUD.depends(),
+            daily_extra_task_crud: DailyExtraTaskCRUD.depends()
     ):
         self.user = user
         self.crud = crud
@@ -32,6 +34,7 @@ class AssignmentService:
         self.room_crud = room_crud
         self.task_crud = task_crud
         self.room_task_crud = room_task_crud
+        self.daily_extra_task_crud = daily_extra_task_crud
 
     async def get_daily_assignments_dates(self):
         assignment_dates = await self.daily_crud.db.execute(
@@ -181,11 +184,33 @@ class AssignmentService:
                                   room_tasks]
             tasks_response = [schemas.TaskResponse.model_validate(t) for t in tasks]
 
+            det_rows = await self.daily_extra_task_crud.get_list_extra_tasks(d.id)
+
+            assigned_tasks_response: list[schemas.DailyExtraTaskResponse] = []
+
+            for det in det_rows:
+                task_obj = det.task or await self.task_crud.get(det.task_id)
+                room_obj = det.room or await self.room_crud.get(det.room_id)
+
+                assigned_tasks_response.append(
+                    schemas.DailyExtraTaskResponse(
+                        id=det.id,
+                        task=schemas.TaskResponse.model_validate(
+                            task_obj, from_attributes=True
+                        ),
+                        room=schemas.RoomResponse.model_validate(
+                            room_obj, from_attributes=True
+                        ),
+                        completed=det.completed if hasattr(det, "completed") else None
+                    )
+                )
+
             result.append(
                 schemas.DailyAssignmentForUserResponse(
                     id=d.id,
                     location=location_response,
                     rooms=rooms_response,
+                    assigned_tasks=assigned_tasks_response,
                     room_tasks=room_task_response,
                     tasks=tasks_response,
                     user_id=d.user_id,

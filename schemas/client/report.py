@@ -30,36 +30,28 @@ class ReportRoomRequest(BaseModel):
     status: RoomStatus
 
 
-class ReportBase(BaseModel):
-    daily_assignment_id: int
-    user_id: int
-    message: Optional[str] = None
-    media_links: Optional[list[str]] = None
+class TimeValidatedReportBase(BaseModel):
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
-    status: schemas.AssignmentStatus
 
     @field_validator("end_time")
     def validate_times(cls, end_time_value: Optional[datetime], info):
-        """
-        Этот валидатор срабатывает, когда Pydantic валидирует поле end_time.
-        info.data — это словарь со значениями всех ранее провалидированных полей,
-        то есть там уже может лежать start_time (если его передали).
-        """
         start_time_value = info.data.get("start_time")
-
-        # Если либо start_time, либо end_time не заданы, просто возвращаем end_time
-        # без ошибок
         if start_time_value is None or end_time_value is None:
             return end_time_value
-
-        # Если оба поля заданы, проверяем, что end_time > start_time
         if end_time_value <= start_time_value:
             raise exceptions.EndTimeMustBeAfterStartTime(
                 {"start_time": start_time_value, "end_time": end_time_value}
             )
-
         return end_time_value
+
+
+class ReportBase(TimeValidatedReportBase):
+    daily_assignment_id: int
+    user_id: int
+    message: Optional[str] = None
+    media_links: Optional[list[str]] = None
+    status: schemas.AssignmentStatus
 
 
 class CreateReport(ReportBase):
@@ -89,10 +81,17 @@ class UpdateReport(BaseModel):
         return end_time
 
 
-class ReportResponse(ReportBase):
+class ReportResponse(TimeValidatedReportBase):
     """Схема для ответа API"""
     id: int
+    daily_assignment_id: int  # Legacy
+    user_id: int  # Legacy
+    location_name: str | None = None
+    user_full_name: str | None = None
     report_rooms: Optional[list[ReportRoomResponse]] = []
+    message: Optional[str] = None
+    media_links: Optional[list[str]] = None
+    status: schemas.AssignmentStatus
 
     # Убираем явные декларации duration_seconds и duration_minutes
     # Они будут полностью вычисляемыми

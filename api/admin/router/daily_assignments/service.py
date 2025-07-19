@@ -27,6 +27,11 @@ class AdminDailyAssignmentService(
         assignments = await self.crud.get_daily_assignments(dates)
         return [schemas.DailyAssignmentResponse.model_validate(a) for a in assignments]
 
+    async def create_daily_assignments_batch(
+            self, data: list[schemas.DailyAssignmentCreate]
+    ) -> list[schemas.DailyAssignmentResponse]:
+        return await self.crud.create_daily_assignments_batch(data)
+
     async def get_daily_assignments_dates(self):
         assignment_dates = await self.crud.db.execute(
             select(
@@ -49,5 +54,5 @@ class AdminDailyAssignmentService(
         assignment = await self.crud.get(daily_assignments_id)
         if not assignment:
             raise exceptions.ObjectNotFoundByIdError("assignment", daily_assignments_id)
-        await self.crud.delete_daily_assignments_group(assignment.group_uuid)
+        await self.crud.delete_daily_assignments_group(assignment)
         return schemas.SuccessResponse(success=True)

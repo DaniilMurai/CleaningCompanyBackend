@@ -1,6 +1,6 @@
 from sqlalchemy import select, update
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import joinedload, selectinload
 
 import exceptions
 import schemas
@@ -21,6 +21,36 @@ class ReportCRUD(BaseModelCrud[Report]):
         "status", "daily_assignment_id",
         "user_id", "message", "media_links"
     )
+
+    @staticmethod
+    def build_report_response(report: Report) -> schemas.ReportResponse:
+        report_rooms = [
+            schemas.ReportRoomResponse.model_validate(rr, from_attributes=True)
+            for rr in report.report_rooms or []
+        ]
+
+        return schemas.ReportResponse.model_validate(
+            {
+                "id": report.id,
+                "daily_assignment_id": report.daily_assignment_id,
+                "user_id": report.user_id,
+                "location_name": (
+                    report.daily_assignment.location.name
+                    if report.daily_assignment and report.daily_assignment.location
+                    else None
+                ),
+                "user_full_name": (
+                    f"{report.user.full_name}"
+                    if report.user else None
+                ),
+                "report_rooms": report_rooms,
+                "message": report.message,
+                "media_links": report.media_links,
+                "status": report.status,
+                "start_time": report.start_time,
+                "end_time": report.end_time,
+            }
+        )
 
     async def create_report(self, data: schemas.CreateReport) -> schemas.ReportResponse:
         try:
@@ -46,17 +76,24 @@ class ReportCRUD(BaseModelCrud[Report]):
                 raise exceptions.ObjectNotFoundByIdError(
                     "assignment", report.daily_assignment_id
                 )
-            
+
             report.status = data.status
             assignment.status = data.status
 
             await self.db.commit()
             report = await self.db.scalar(
-                select(Report).options(selectinload(Report.report_rooms)).where(
+                select(Report).options(
+                    selectinload(Report.report_rooms), joinedload(Report.user),
+                    joinedload(Report.daily_assignment).joinedload(
+                        DailyAssignment.location
+                    )
+                ).where(
                     Report.id == report.id
                 )
             )
-            return schemas.ReportResponse.model_validate(report, from_attributes=True)
+
+            # return schemas.ReportResponse.model_validate(report, from_attributes=True)
+            return self.build_report_response(report)
 
         except SQLAlchemyError as e:
             await self.db.rollback()

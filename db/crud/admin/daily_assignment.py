@@ -1,14 +1,14 @@
-import uuid
 from datetime import date
 from typing import Optional, Sequence
 
 from sqlalchemy import and_, func, select, update
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import selectinload
 
 import exceptions
 import schemas
 from db.crud.models.daily_assignment import DailyAssignmentCRUD
-from db.models import DailyAssignment, Report
+from db.models import DailyAssignment, DailyExtraTask, Report, Room, RoomTask
 from schemas import AssignmentStatus
 
 
@@ -29,6 +29,47 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
             daily_assignments = await self.db.execute(select(DailyAssignment))
 
         return daily_assignments.scalars().all()
+
+    async def create_daily_assignments_batch(
+            self, data: list[schemas.DailyAssignmentCreate]
+    ):
+        daily_assignments = await self.create_batch(
+            [item.model_dump() for item in data]
+        )
+        for d in daily_assignments:
+            rooms = await self.db.execute(
+                select(Room).where(Room.location_id == d.location_id)
+            )
+            rooms = rooms.scalars().all()
+            room_ids = [room.id for room in rooms]
+
+            room_tasks = await self.db.execute(
+                select(RoomTask)
+                .where(RoomTask.room_id.in_(room_ids))
+                .options(selectinload(RoomTask.task))
+            )
+
+            room_tasks = room_tasks.scalars().all()
+
+            daily_extra_tasks = []
+            for rt in room_tasks:
+                frequency = rt.task.frequency or 1
+                if rt.times_since_done >= frequency:
+                    daily_extra_tasks.append(
+                        DailyExtraTask(
+                            daily_assignment_id=d.id,
+                            room_id=rt.room_id,
+                            task_id=rt.task_id
+                        )
+                    )
+                    rt.times_since_done = 1
+                else:
+                    rt.times_since_done += 1
+
+            self.db.add_all(daily_extra_tasks)
+
+        await self.db.commit()
+        return daily_assignments
 
     async def check_assignment_group(
             self, daily_assignments_id: int
@@ -60,10 +101,13 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
             {"assignments_amount": len(assignments), "interval_days": None}
         )
 
-    async def delete_daily_assignments_group(self, group_uuid: uuid.uuid4()):
+    async def delete_daily_assignments_group(self, assignment: DailyAssignment):
         try:
             stmt = update(DailyAssignment).where(
-                DailyAssignment.group_uuid == group_uuid
+                and_(
+                    DailyAssignment.group_uuid == assignment.group_uuid,
+                    DailyAssignment.date >= assignment.date
+                )
             ).values(is_deleted=True)
             await self.db.execute(stmt)
             await self.db.commit()

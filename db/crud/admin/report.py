@@ -1,5 +1,5 @@
 from sqlalchemy import and_, or_, select
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import joinedload, selectinload
 
 import schemas
 from db.crud.models.report import ReportCRUD
@@ -35,7 +35,13 @@ class AdminReportCRUD(ReportCRUD):
         ).join(
             self.location_model,
             self.daily_assignment_model.location_id == self.location_model.id
-        ).options(selectinload(self.model.report_rooms))
+        ).options(
+            selectinload(self.model.report_rooms),
+            joinedload(self.model.user),
+            joinedload(self.model.daily_assignment).joinedload(
+                self.daily_assignment_model.location
+            )
+        )
 
         if params.order_by:
             field = params.order_by
@@ -50,5 +56,4 @@ class AdminReportCRUD(ReportCRUD):
         stmt = await self.paginate(stmt, params.offset, params.limit)
 
         result = await self.db.scalars(stmt)
-        return [schemas.ReportResponse.model_validate(r, from_attributes=True) for r in
-                result.all()]
+        return [self.build_report_response(r) for r in result.all()]
