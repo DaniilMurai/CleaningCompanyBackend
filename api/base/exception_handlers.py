@@ -41,8 +41,17 @@ async def api_exception_handler(
     )
 
     status_code = error.status_code
+
     detail_text = i18n.t(error.message, locale=lang, **error.data or {})
     detail_data = error.data
+
+    logger.error(
+        error, {
+            "detail_text": f"test translation: {i18n.t("status", locale="ru")}",
+            "detail_data": detail_data,
+            "lang": "ru",
+        }
+    )
 
     logger.error(
         error, {

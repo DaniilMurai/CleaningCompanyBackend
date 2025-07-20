@@ -9,9 +9,6 @@ class CsvAdapter(ReportsAdapter):
 
     async def get_result(self, data) -> tuple[BytesIO, str]:
 
-        for row in data:
-            print(row)
-
         stream = io.StringIO()
         writer = csv.writer(stream)
 
