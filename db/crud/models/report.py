@@ -52,6 +52,40 @@ class ReportCRUD(BaseModelCrud[Report]):
             }
         )
 
+    @staticmethod
+    def build_report_with_assignment_date_response(
+            report: Report
+    ) -> schemas.ReportWithAssignmentDateResponse:
+        report_rooms = [
+            schemas.ReportRoomResponse.model_validate(rr, from_attributes=True)
+            for rr in report.report_rooms or []
+        ]
+
+        return schemas.ReportWithAssignmentDateResponse.model_validate(
+            {
+                "id": report.id,
+                "daily_assignment_id": report.daily_assignment_id,
+                "user_id": report.user_id,
+                "location_name": (
+                    report.daily_assignment.location.name
+                    if report.daily_assignment and report.daily_assignment.location
+                    else None
+                ),
+                "user_full_name": (
+                    f"{report.user.full_name}"
+                    if report.user else None
+                ),
+                "assignment_date": report.daily_assignment.date if
+                report.daily_assignment else None,
+                "report_rooms": report_rooms,
+                "message": report.message,
+                "media_links": report.media_links,
+                "status": report.status,
+                "start_time": report.start_time,
+                "end_time": report.end_time,
+            }
+        )
+
     async def create_report(self, data: schemas.CreateReport) -> schemas.ReportResponse:
         try:
             report_data = data.model_dump(exclude={"report_rooms"})

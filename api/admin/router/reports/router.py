@@ -13,7 +13,7 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 async def get_reports(
         params: Annotated[schemas.AdminReportFilterParams, Query()],
         service: AdminReportService = Depends()
-) -> list[schemas.ReportResponse]:
+) -> list[schemas.ReportWithAssignmentDateResponse]:
     return await service.get_reports(params)
 
 

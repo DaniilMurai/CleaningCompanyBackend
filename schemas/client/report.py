@@ -86,8 +86,8 @@ class ReportResponse(TimeValidatedReportBase):
     id: int
     daily_assignment_id: int  # Legacy
     user_id: int  # Legacy
-    location_name: str | None = None
-    user_full_name: str | None = None
+    location_name: Optional[str] = None
+    user_full_name: Optional[str] = None
     report_rooms: Optional[list[ReportRoomResponse]] = []
     message: Optional[str] = None
     media_links: Optional[list[str]] = None
@@ -124,6 +124,10 @@ class ReportResponse(TimeValidatedReportBase):
     model_config = ConfigDict(
         from_attributes=True,
     )
+
+
+class ReportWithAssignmentDateResponse(ReportResponse):
+    assignment_date: Optional[date]
 
 
 class AssignmentReportResponse(BaseModel):

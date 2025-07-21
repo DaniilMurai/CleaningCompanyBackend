@@ -16,5 +16,7 @@ class AdminReportService(
     entity_name = "report"
     crud_cls = AdminReportCRUD
 
-    async def get_reports(self, params: schemas.AdminReportFilterParams | None = None):
+    async def get_reports(
+            self, params: schemas.AdminReportFilterParams | None = None
+    ) -> list[schemas.ReportWithAssignmentDateResponse]:
         return await self.crud.get_reports_crud(params)

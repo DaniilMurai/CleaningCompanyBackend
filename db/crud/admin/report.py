@@ -9,7 +9,7 @@ class AdminReportCRUD(ReportCRUD):
 
     async def get_reports_crud(
             self, params: schemas.AdminReportFilterParams | None = None,
-    ):
+    ) -> list[schemas.ReportWithAssignmentDateResponse]:
 
         conditions = []
         if params.status:
@@ -56,4 +56,5 @@ class AdminReportCRUD(ReportCRUD):
         stmt = await self.paginate(stmt, params.offset, params.limit)
 
         result = await self.db.scalars(stmt)
-        return [self.build_report_response(r) for r in result.all()]
+        return [self.build_report_with_assignment_date_response(r) for r in
+                result.all()]

@@ -174,6 +174,8 @@ class DailyAssignmentResponse(BaseModel):
     location_id: int
     user_id: int
     date: dt_date
+    # location: Optional[LocationResponse] = None
+    # user: Optional[AdminReadUser] = None
     admin_note: str | None = None
     user_note: str | None = None
     start_time: datetime | None = None
