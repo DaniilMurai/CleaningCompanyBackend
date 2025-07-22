@@ -14,7 +14,7 @@ router = APIRouter(prefix="/daily-assignments", tags=["daily assignments"])
 async def get_daily_assignments(
         params: Annotated[schemas.AdminAssignmentDatesGetListParams, Query()],
         service: AdminDailyAssignmentService = Depends()
-) -> list[schemas.DailyAssignmentResponse]:
+) -> list[schemas.DailyAssignmentWithLocationAndUserResponse]:
     return await service.get_daily_assignments(params)
 
 

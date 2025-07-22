@@ -24,10 +24,11 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
                         DailyAssignment.is_deleted == False
                     )
                 )
-                # .options(
-                #     selectinload(DailyAssignment.user),
-                #     selectinload(DailyAssignment.location)
-                # )
+                .options(
+                    selectinload(DailyAssignment.location),
+                    selectinload(DailyAssignment.user)
+                )
+
             )
         else:
             daily_assignments = await self.db.execute(
@@ -35,10 +36,11 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
                 .where(
                     DailyAssignment.is_deleted == False
                 )
-                # .options(
-                #     selectinload(DailyAssignment.user),
-                #     selectinload(DailyAssignment.location)
-                # )
+                .options(
+                    selectinload(DailyAssignment.location),
+                    selectinload(DailyAssignment.user)
+                )
+
             )
 
         return daily_assignments.scalars().all()

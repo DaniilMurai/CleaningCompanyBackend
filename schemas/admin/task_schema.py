@@ -5,6 +5,8 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, computed_field
 
+from ..user import AdminReadUser
+
 
 class AssignmentDatesFilter(BaseModel):
     dates: list[dt_date] | None = None
@@ -183,6 +185,11 @@ class DailyAssignmentResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class DailyAssignmentWithLocationAndUserResponse(DailyAssignmentResponse):
+    location: LocationResponse
+    user: AdminReadUser
 
 
 class AssignmentGroup(BaseModel):

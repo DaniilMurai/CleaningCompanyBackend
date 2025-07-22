@@ -12,7 +12,7 @@ from db.crud.models.location import LocationCRUD
 from db.crud.models.room import RoomCRUD
 from db.crud.models.room_task import RoomTaskCRUD
 from db.crud.models.task import TaskCRUD
-from db.models import DailyAssignment, Report
+from db.models import DailyAssignment, Location, Report
 
 
 class AssignmentService:
@@ -161,7 +161,9 @@ class AssignmentService:
 
         result = []
         for d in daily_assignments:
-            location = await self.location_crud.get(d.location_id)
+            location = (await self.location_crud.db.execute(
+                select(Location).where(Location.id == d.location_id)
+            )).scalars().one_or_none()
             location_response = schemas.LocationResponse.model_validate(
                 location, from_attributes=True
             )

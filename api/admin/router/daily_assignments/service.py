@@ -22,10 +22,12 @@ class AdminDailyAssignmentService(
 
     async def get_daily_assignments(
             self, params: schemas.AdminAssignmentDatesGetListParams | None = None
-    ) -> list[schemas.DailyAssignmentResponse]:
+    ) -> list[schemas.DailyAssignmentWithLocationAndUserResponse]:
         dates = params.dates if params.dates else None
         assignments = await self.crud.get_daily_assignments(dates)
-        return [schemas.DailyAssignmentResponse.model_validate(a) for a in assignments]
+        return [schemas.DailyAssignmentWithLocationAndUserResponse.model_validate(a) for
+                a in
+                assignments]
 
     async def create_daily_assignments_batch(
             self, data: list[schemas.DailyAssignmentCreate]
