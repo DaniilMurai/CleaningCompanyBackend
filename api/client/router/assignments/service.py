@@ -12,7 +12,7 @@ from db.crud.models.location import LocationCRUD
 from db.crud.models.room import RoomCRUD
 from db.crud.models.room_task import RoomTaskCRUD
 from db.crud.models.task import TaskCRUD
-from db.models import DailyAssignment, Location, Report
+from db.models import DailyAssignment, Location, Report, RoomTask, Task
 
 
 class AssignmentService:
@@ -108,17 +108,19 @@ class AssignmentService:
             location, from_attributes=True
         )
         rooms = await self.room_crud.get_list(location_id=location_response.id)
-        room_tasks = []
-        for room in rooms:
-            room_tasks += await self.room_task_crud.get_list(room_id=room.id)
 
-        task_ids = {rt.task_id for rt in room_tasks}
+        room_ids = [r.id for r in rooms]
+        room_tasks = (await self.room_task_crud.db.execute(
+            select(RoomTask).where(
+                RoomTask.room_id.in_(room_ids)
+            )
+        )).scalars().all()
 
-        tasks = []
-        for task_id in task_ids:
-            task = await self.task_crud.get(task_id)
-            if task:
-                tasks.append(task)
+        task_ids = [rt.task_id for rt in room_tasks]
+
+        tasks = (await self.task_crud.db.execute(
+            select(Task).where(Task.id.in_(task_ids))
+        )).scalars().all()
 
         rooms_response = [schemas.RoomResponse.model_validate(r) for r in rooms]
         room_task_response = [schemas.RoomTaskResponse.model_validate(rt) for rt
@@ -141,6 +143,7 @@ class AssignmentService:
             end_time=d.end_time
         )
 
+    # TODO оптимизировать
     async def get_daily_assignments(
             self, dates: list[date] | None = None
     ) -> list[schemas.DailyAssignmentForUserResponse]:
@@ -168,17 +171,18 @@ class AssignmentService:
                 location, from_attributes=True
             )
             rooms = await self.room_crud.get_list(location_id=location_response.id)
-            room_tasks = []
-            for room in rooms:
-                room_tasks += await self.room_task_crud.get_list(room_id=room.id)
 
-            task_ids = {rt.task_id for rt in room_tasks}
+            room_ids = [r.id for r in rooms]
 
-            tasks = []
-            for task_id in task_ids:
-                task = await self.task_crud.get(task_id)
-                if task:
-                    tasks.append(task)
+            room_tasks = (await self.room_task_crud.db.execute(
+                select(RoomTask).where(RoomTask.room_id.in_(room_ids))
+            )).scalars().all()
+
+            task_ids = [rt.task_id for rt in room_tasks]
+
+            tasks = (await self.task_crud.db.execute(
+                select(Task).where(Task.id.in_(task_ids))
+            )).scalars().all()
 
             rooms_response = [schemas.RoomResponse.model_validate(r) for r in rooms]
             room_task_response = [schemas.RoomTaskResponse.model_validate(rt) for rt
