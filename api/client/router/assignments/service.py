@@ -1,6 +1,7 @@
 from datetime import date
 
 from sqlalchemy import and_, func, select
+from sqlalchemy.orm import selectinload
 
 import exceptions
 import schemas
@@ -12,7 +13,8 @@ from db.crud.models.location import LocationCRUD
 from db.crud.models.room import RoomCRUD
 from db.crud.models.room_task import RoomTaskCRUD
 from db.crud.models.task import TaskCRUD
-from db.models import DailyAssignment, Location, Report, RoomTask, Task
+from db.models import DailyAssignment, Location, Report, Room, RoomTask
+from utils.benchmark import benchmark
 
 
 class AssignmentService:
@@ -91,36 +93,39 @@ class AssignmentService:
 
         return await self.get_daily_assignment_by_id(assignment_id)
 
+    @benchmark
     async def get_daily_assignment_by_id(
             self, assignment_id: int
     ) -> schemas.DailyAssignmentForUserResponse:
 
-        kwargs = {"user_id": self.user.id, "id": assignment_id}
-        d = await self.daily_crud.get(**kwargs)
+        d = (await self.daily_crud.db.execute(
+            select(DailyAssignment)
+            .where(
+                DailyAssignment.id == assignment_id,
+                DailyAssignment.is_deleted == False
+            ).options(
+                selectinload(DailyAssignment.location)
+                .selectinload(Location.rooms)
+                .selectinload(Room.room_tasks)
+                .selectinload(RoomTask.task)
+            )
+        )).scalars().one_or_none()
 
         if not d:
             raise exceptions.ObjectNotFoundByIdError(
                 "daily_assignment from user id", self.user.id
             )
 
-        location = await self.location_crud.get(d.location_id)
-        location_response = schemas.LocationResponse.model_validate(
-            location, from_attributes=True
-        )
-        rooms = await self.room_crud.get_list(location_id=location_response.id)
+        location_response = d.location
+        rooms = d.location.rooms
+        room_tasks = []
+        tasks_dict = {}
+        for r in rooms:
+            for rt in r.room_tasks:
+                room_tasks.append(rt)
+                tasks_dict[rt.task_id] = rt.task
 
-        room_ids = [r.id for r in rooms]
-        room_tasks = (await self.room_task_crud.db.execute(
-            select(RoomTask).where(
-                RoomTask.room_id.in_(room_ids)
-            )
-        )).scalars().all()
-
-        task_ids = [rt.task_id for rt in room_tasks]
-
-        tasks = (await self.task_crud.db.execute(
-            select(Task).where(Task.id.in_(task_ids))
-        )).scalars().all()
+        tasks = list(tasks_dict.values())
 
         rooms_response = [schemas.RoomResponse.model_validate(r) for r in rooms]
         room_task_response = [schemas.RoomTaskResponse.model_validate(rt) for rt
@@ -143,12 +148,11 @@ class AssignmentService:
             end_time=d.end_time
         )
 
-    # TODO оптимизировать
+    @benchmark
     async def get_daily_assignments(
             self, dates: list[date] | None = None
     ) -> list[schemas.DailyAssignmentForUserResponse]:
 
-        kwargs = {"user_id": self.user.id}
         if dates:
             daily_assignments = (await self.daily_crud.db.execute(
                 select(DailyAssignment).where(
@@ -157,32 +161,43 @@ class AssignmentService:
                         func.date(DailyAssignment.date).in_(dates),
                         DailyAssignment.user_id == self.user.id
                     )
+                ).options(
+                    selectinload(DailyAssignment.location)
+                    .selectinload(Location.rooms)
+                    .selectinload(Room.room_tasks)
+                    .selectinload(RoomTask.task)
                 )
             )).scalars().all()
         else:
-            daily_assignments = await self.daily_crud.get_list(**kwargs)
+
+            daily_assignments = (await self.daily_crud.db.execute(
+                select(DailyAssignment).where(
+                    and_(
+                        DailyAssignment.is_deleted == False,
+                        DailyAssignment.user_id == self.user.id
+                    )
+                ).options(
+                    selectinload(DailyAssignment.location)
+                    .selectinload(Location.rooms)
+                    .selectinload(Room.room_tasks)
+                    .selectinload(RoomTask.task)
+                )
+            )).scalars().all()
 
         result = []
+
         for d in daily_assignments:
-            location = (await self.location_crud.db.execute(
-                select(Location).where(Location.id == d.location_id)
-            )).scalars().one_or_none()
-            location_response = schemas.LocationResponse.model_validate(
-                location, from_attributes=True
-            )
-            rooms = await self.room_crud.get_list(location_id=location_response.id)
+            location_response = d.location
 
-            room_ids = [r.id for r in rooms]
+            rooms = d.location.rooms
+            room_tasks = []
+            tasks_dict = {}
+            for r in rooms:
+                for rt in r.room_tasks:
+                    room_tasks.append(rt)
+                    tasks_dict[rt.task_id] = rt.task
 
-            room_tasks = (await self.room_task_crud.db.execute(
-                select(RoomTask).where(RoomTask.room_id.in_(room_ids))
-            )).scalars().all()
-
-            task_ids = [rt.task_id for rt in room_tasks]
-
-            tasks = (await self.task_crud.db.execute(
-                select(Task).where(Task.id.in_(task_ids))
-            )).scalars().all()
+            tasks = list(tasks_dict.values())
 
             rooms_response = [schemas.RoomResponse.model_validate(r) for r in rooms]
             room_task_response = [schemas.RoomTaskResponse.model_validate(rt) for rt
