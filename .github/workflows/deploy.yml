@@ -44,14 +44,12 @@ jobs:
       - name: Deploy to server
         run: |
           ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
-          export REGISTRY_USER="${{ secrets.REGISTRY_USER }}" &&
-          export REGISTRY_READ_TOKEN='${{ secrets.REGISTRY_READ_TOKEN }}' &&
-          docker login ghcr.io -u \$REGISTRY_USER -p \$REGISTRY_READ_TOKEN &&
-          cd /home/${{ secrets.DEPLOY_USER }}/neuer-standard &&
-          docker-compose pull &&
-          docker-compose run --rm api poetry run alembic upgrade head &&
-          docker-compose up -d --scale api=2 &&
-          ./wait_for_new_api.sh &&
-          docker-compose up -d --scale api=1 &&
-          docker-compose up -d worker
+            docker login ghcr.io -u ${{ secrets.REGISTRY_USER }} -p ${{secrets.REGISTRY_READ_TOKEN}} &&
+            cd /home/${{ secrets.DEPLOY_USER }}/neuer-standard &&
+            docker-compose pull &&
+            docker-compose run --rm api poetry run alembic upgrade head &&
+            docker-compose up -d --scale api=2 &&
+            ./wait_for_new_api.sh &&
+            docker-compose up -d --scale api=1 &&
+            docker-compose up -d worker
           '
