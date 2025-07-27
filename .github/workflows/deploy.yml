@@ -39,13 +39,13 @@ jobs:
       - name: Copy docker-compose.yml to server
         run: |
           scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml \
-          ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/home/deploy/neuer-standard/
+          ${{ secrets.DEPLOY_USER }}@[${{ secrets.DEPLOY_HOST }}]:/home/${{ secrets.DEPLOY_USER }}/neuer-standard/
 
       - name: Deploy to server
         run: |
-          ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
+          ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@[${{ secrets.DEPLOY_HOST }}] '
             docker login ghcr.io -u ${{ secrets.REGISTRY_USER }} -p ${{secrets.REGISTRY_READ_TOKEN}} &&
-            cd /home/deploy/neuer-standard &&
+            cd /home/${{ secrets.DEPLOY_USER }}/neuer-standard &&
             docker-compose pull &&
             docker-compose run --rm api poetry run alembic upgrade head &&
             docker-compose up -d --scale api=2 &&
