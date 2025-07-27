@@ -36,6 +36,11 @@ jobs:
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > key.pem
           chmod 600 key.pem
 
+      - name: Copy docker-compose.yml to server
+        run: |
+          scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml \
+          ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/home/deploy/neuer-standard/
+
       - name: Deploy to server
         run: |
           ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
