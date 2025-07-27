@@ -8,6 +8,9 @@ RUN pip install --no-cache-dir poetry
 # Copying dependency files (cache)
 COPY pyproject.toml poetry.lock ./
 
+# fixing tzlocal issues
+RUN apt-get update && apt-get install -y tzdata && rm -rf /var/lib/apt/lists/*
+
 # Disabling creating virtual env & Installing prod dependencies
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction
