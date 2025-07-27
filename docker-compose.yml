@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  api:
+    image: ghcr.io/${REGISTRY_USER}/api:latest
+    container_name: neuer_standard_api
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+    networks:
+      - neuer_standard_mainnet
+
+  worker:
+    image: ghcr.io/${REGISTRY_USER}/worker:latest
+    container_name: neuer_standard_worker
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+    networks:
+      - neuer_standard_mainnet
+
+  db:
+    image: postgres:15
+    container_name: neuer_standard_db
+    env_file: .env.db
+    volumes:
+      - neuer_standard_pgdata:/var/lib/postgresql/data
+    networks:
+      - neuer_standard_mainnet
+
+  redis:
+    image: redis:7
+    container_name: neuer_standard_redis
+    networks:
+      - neuer_standard_mainnet
+
+volumes:
+  neuer_standard_pgdata:
+
+networks:
+  neuer_standard_mainnet:

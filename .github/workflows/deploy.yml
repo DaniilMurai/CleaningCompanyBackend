@@ -1,0 +1,50 @@
+name: Deploy API
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.REGISTRY_WRITE_TOKEN }}" | docker login ghcr.io -u ${{ secrets.REGISTRY_USER }} --password-stdin
+
+      - name: Build API image
+        run: docker build -t ghcr.io/${{ secrets.REGISTRY_USER }}/neuer-standard-api:latest .
+
+      - name: Build Worker image
+        run: docker build -t ghcr.io/${{ secrets.REGISTRY_USER }}/neuer-standard-worker:latest . --build-arg TARGET=worker
+
+      - name: Push API image
+        run: docker push ghcr.io/${{ secrets.REGISTRY_USER }}/neuer-standard-api:latest
+
+      - name: Push Worker image
+        run: docker push ghcr.io/${{ secrets.REGISTRY_USER }}/neuer-standard-worker:latest
+
+      #      - name: Run tests
+      #        run: pytest  # або своя команда
+
+      - name: Setup SSH
+        run: |
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > key.pem
+          chmod 600 key.pem
+
+      - name: Deploy to server
+        run: |
+          ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
+            docker login ghcr.io -u ${{ secrets.REGISTRY_USER }} -p ${{REGISTRY_READ_TOKEN}} &&
+            cd /home/deploy/neuer-standard &&
+            docker-compose pull &&
+            docker-compose run --rm api poetry run alembic upgrade head &&
+            docker-compose up -d --scale api=2 &&
+            ./wait_for_new_api.sh &&
+            docker-compose up -d --scale api=1 &&
+            docker-compose up -d worker
+          '

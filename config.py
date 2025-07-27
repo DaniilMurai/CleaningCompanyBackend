@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     HOST: str
     PORT: int = 8000
     RELOAD: bool = False
+    WORKERS: int = 1
     DEFAULT_LANG: str = "en"
     LOGS_DIR: str = "logs"
     LOGGER_NAME: str = "neuer-standard"
@@ -18,9 +19,6 @@ class Settings(BaseSettings):
     OUTPUT_REPORTS_EXPORTS_DIR: str = os.path.join(os.getcwd(), "exports")
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
-
-    class Config:
-        env_file = ".env"
 
 
 settings = Settings()
