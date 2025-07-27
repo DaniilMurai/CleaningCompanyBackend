@@ -10,7 +10,7 @@ COPY pyproject.toml poetry.lock ./
 
 # Disabling creating virtual env & Installing prod dependencies
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi
+    && poetry install --no-interaction
 
 # Copying an app code
 COPY . .
