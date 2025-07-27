@@ -43,7 +43,7 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@[${{ secrets.DEPLOY_HOST }}] '
+          ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
             docker login ghcr.io -u ${{ secrets.REGISTRY_USER }} -p ${{secrets.REGISTRY_READ_TOKEN}} &&
             cd /home/${{ secrets.DEPLOY_USER }}/neuer-standard &&
             docker-compose pull &&
