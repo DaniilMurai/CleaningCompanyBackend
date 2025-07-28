@@ -20,6 +20,7 @@ COPY . .
 
 # Default starting argument
 ARG TARGET=api
+ENV TARGET=$TARGET
 
 ARG WORKER_FILE=run_export_worker.py
 ARG API_FILE=run.py
