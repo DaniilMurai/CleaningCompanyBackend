@@ -25,6 +25,7 @@ services:
     env_file: .env.db
     volumes:
       - neuer_standard_pgdata:/var/lib/postgresql/data
+      - ./docker/db/init-uuid.sql:/docker-entrypoint-initdb.d/init-uuid.sql
     networks:
       - neuer_standard_mainnet
 
