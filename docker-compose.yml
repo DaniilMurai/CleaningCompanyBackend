@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  api:
+  neuer-standard-api:
     image: ghcr.io/daniilmurai/neuer-standard-api:latest
     env_file: .env
     depends_on:
@@ -10,7 +10,7 @@ services:
     networks:
       - mainnet
 
-  worker:
+  neuer-standard-worker:
     image: ghcr.io/daniilmurai/neuer-standard-worker:latest
     env_file: .env
     depends_on:
@@ -19,7 +19,7 @@ services:
     networks:
       - mainnet
 
-  db:
+  neuer-standard-db:
     image: postgres:15
     container_name: neuer_standard_db
     env_file: .env.db
@@ -29,7 +29,7 @@ services:
     networks:
       - mainnet
 
-  redis:
+  neuer-standard-redis:
     image: redis:7
     container_name: neuer_standard_redis
     networks:
