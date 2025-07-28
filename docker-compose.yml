@@ -8,7 +8,7 @@ services:
       - db
       - redis
     networks:
-      - neuer_standard_mainnet
+      - mainnet
 
   worker:
     image: ghcr.io/daniilmurai/neuer-standard-worker:latest
@@ -17,7 +17,7 @@ services:
       - db
       - redis
     networks:
-      - neuer_standard_mainnet
+      - mainnet
 
   db:
     image: postgres:15
@@ -27,13 +27,13 @@ services:
       - neuer_standard_pgdata:/var/lib/postgresql/data
       - ./docker/db/init-uuid.sql:/docker-entrypoint-initdb.d/init-uuid.sql
     networks:
-      - neuer_standard_mainnet
+      - mainnet
 
   redis:
     image: redis:7
     container_name: neuer_standard_redis
     networks:
-      - neuer_standard_mainnet
+      - mainnet
 
 volumes:
   neuer_standard_pgdata:
