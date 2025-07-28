@@ -38,11 +38,10 @@ jobs:
 
       - name: Copy deploy configs to server
         run: |
-          echo ${{ secrets.DEPLOY_HOST }}
           scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/home/${{ secrets.DEPLOY_USER }}/neuer-standard/
-          scp -i key.pem -o StrictHostKeyChecking=no -r docker \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/home/${{ secrets.DEPLOY_USER }}/neuer-standard/
+          scp -i key.pem -o StrictHostKeyChecking=no -r docker/* \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/home/${{ secrets.DEPLOY_USER }}/neuer-standard/docker/
 
       - name: Deploy to server
         run: |
