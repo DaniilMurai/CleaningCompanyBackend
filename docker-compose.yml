@@ -5,8 +5,8 @@ services:
     image: ghcr.io/daniilmurai/neuer-standard-api:latest
     env_file: .env
     depends_on:
-      - db
-      - redis
+      - neuer-standard-db
+      - neuer-standard-redis
     networks:
       - mainnet
 
@@ -14,8 +14,8 @@ services:
     image: ghcr.io/daniilmurai/neuer-standard-worker:latest
     env_file: .env
     depends_on:
-      - db
-      - redis
+      - neuer-standard-db
+      - neuer-standard-redis
     networks:
       - mainnet
 
