@@ -22,8 +22,8 @@ COPY . .
 ARG TARGET=api
 ENV TARGET=$TARGET
 
-ARG WORKER_FILE=run_export_worker.py
-ARG API_FILE=run.py
+ENV WORKER_FILE=run_export_worker.py
+ENV API_FILE=run.py
 
 # Running api or worker
 CMD ["sh", "-c", "if [ \"$TARGET\" = 'worker' ]; then echo \"running worker\" && poetry run python $WORKER_FILE; else echo \"running API\" && poetry run python $API_FILE; fi"]
