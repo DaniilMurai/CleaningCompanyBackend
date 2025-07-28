@@ -51,8 +51,7 @@ app = CustomFastApi(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        settings.FRONTEND_URL, "http://neuer-standart.surge.sh",
-        "https://neuer-standart.surge.sh"
+        settings.FRONTEND_URL
     ],
     allow_methods=["*"],
     allow_credentials=True,
