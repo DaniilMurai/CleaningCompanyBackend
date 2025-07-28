@@ -56,5 +56,5 @@ jobs:
             docker compose up -d --scale neuer-standard-api=2 &&
             ./wait_for_new_api.sh &&
             docker compose up -d --scale neuer-standard-api=1 &&
-            docker compose up -d worker
+            docker compose up -d neuer-standard-worker
           '
