@@ -10,7 +10,7 @@ async def main():
     setup_logger(
         name=settings.LOGGER_NAME,
         logs_dir=settings.LOGS_DIR,
-        file_name="api.log",
+        file_name="worker.log",
         level=logging.DEBUG,
     )
 
