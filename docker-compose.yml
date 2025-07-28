@@ -39,4 +39,4 @@ volumes:
   neuer_standard_pgdata:
 
 networks:
-  neuer_standard_mainnet:
+  mainnet:
