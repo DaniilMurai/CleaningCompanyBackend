@@ -46,10 +46,10 @@ jobs:
           ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
             docker login ghcr.io -u ${{ secrets.REGISTRY_USER }} -p ${{secrets.REGISTRY_READ_TOKEN}} &&
             cd /home/${{ secrets.DEPLOY_USER }}/neuer-standard &&
-            docker-compose pull &&
-            docker-compose run --rm api poetry run alembic upgrade head &&
-            docker-compose up -d --scale api=2 &&
+            docker compose pull &&
+            docker compose run --rm api poetry run alembic upgrade head &&
+            docker compose up -d --scale api=2 &&
             ./wait_for_new_api.sh &&
-            docker-compose up -d --scale api=1 &&
-            docker-compose up -d worker
+            docker compose up -d --scale api=1 &&
+            docker compose up -d worker
           '
