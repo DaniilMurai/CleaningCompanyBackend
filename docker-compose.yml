@@ -9,6 +9,8 @@ services:
       - neuer-standard-redis
     networks:
       - mainnet
+    volumes:
+      - exports:/exports
 
   neuer-standard-worker:
     image: ghcr.io/daniilmurai/neuer-standard-worker:latest
@@ -18,6 +20,8 @@ services:
       - neuer-standard-redis
     networks:
       - mainnet
+    volumes:
+      - exports:/exports
 
   neuer-standard-db:
     image: postgres:15
@@ -37,6 +41,7 @@ services:
 
 volumes:
   pgdata:
+  exports:
 
 networks:
   mainnet:
