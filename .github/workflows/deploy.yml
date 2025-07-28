@@ -40,8 +40,10 @@ jobs:
         run: |
           scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/home/${{ secrets.DEPLOY_USER }}/neuer-standard/
+          ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            'mkdir -p /home/user/neuer-standard/docker'
           scp -i key.pem -o StrictHostKeyChecking=no -r docker/* \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/home/${{ secrets.DEPLOY_USER }}/neuer-standard/docker/
+            user@host:/home/user/neuer-standard/docker/
 
       - name: Deploy to server
         run: |
