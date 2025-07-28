@@ -1,6 +1,8 @@
 import asyncio
 import os
 
+import aiofiles
+
 import schemas
 from api.admin.router.export_reports.service import AdminExportReportService
 from config import settings
@@ -57,8 +59,8 @@ async def export_report_worker():
                         output_dir, f"{report.id}_reports.{filename}"
                     )
 
-                    with open(file_path, "wb") as f:
-                        f.write(content.getbuffer())
+                    async with aiofiles.open(file_path, "wb") as f:
+                        await f.write(content.getbuffer())
 
                     await service.set_export_report_status(
                         report, schemas.ReportStatus.completed, file_path=file_path
