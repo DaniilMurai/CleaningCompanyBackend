@@ -44,7 +44,7 @@ jobs:
             mkdir -p /home/${{ secrets.DEPLOY_USER }}/neuer-standard/docker
           '
           scp -i key.pem -o StrictHostKeyChecking=no -r docker/* \
-            user@host:/home/${{ secrets.DEPLOY_USER }}/neuer-standard/docker/
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/home/${{ secrets.DEPLOY_USER }}/neuer-standard/docker/
 
       - name: Deploy to server
         run: |
