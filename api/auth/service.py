@@ -54,7 +54,7 @@ class AuthService:
             )
 
         user = await self.crud.get(user_id)
-
+        
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

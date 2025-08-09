@@ -3,7 +3,7 @@ from datetime import date as dt_date, datetime
 from typing import Optional
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from ..user import AdminReadUser
 
@@ -39,8 +39,7 @@ class LocationResponse(BaseModel):
     name: str
     address: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # class LocationResponse(LocationCreate):
@@ -66,8 +65,7 @@ class RoomResponse(BaseModel):
     name: str
     location_id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 #
@@ -95,8 +93,7 @@ class TaskUpdate(BaseModel):
 class TaskResponse(TaskCreate):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # class TaskResponse(TaskCreate):
@@ -125,8 +122,7 @@ class RoomTaskResponse(BaseRoomTask):
     id: int
     times_since_done: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # class RoomTaskResponse(RoomTaskCreate):
@@ -183,8 +179,7 @@ class DailyAssignmentResponse(BaseModel):
     start_time: datetime | None = None
     end_time: datetime | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DailyAssignmentWithLocationAndUserResponse(DailyAssignmentResponse):
@@ -244,8 +239,7 @@ class DailyAssignmentForUserResponse(BaseModel):
             return None
         return round(self.duration_seconds / 3600, 2)
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DailyExtraTaskCreate(BaseModel):
