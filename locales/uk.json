@@ -1,0 +1,24 @@
+{
+  "uk": {
+    "hello world": "Привіт світ",
+    "test error": "Тест %{test}",
+    "id": "ID",
+    "start_time_str": "Початок",
+    "end_time_str": "Кінець",
+    "message": "Повідомлення",
+    "user_full_name": "Співробітник",
+    "location_name": "Локація",
+    "location_address": "Адреса",
+    "assignment_date": "Дата завдання",
+    "status": "Статус",
+    "not_started": "Не розпочато",
+    "in_progress": "В процесі",
+    "partially_completed": "Частково виконано",
+    "completed": "Виконано",
+    "not_completed": "Не виконано",
+    "expired": "Протерміновано",
+    "rooms_not_done": "Кімнати не зроблено",
+    "duration": "Тривалість",
+    "partially": "Частково"
+  }
+}
