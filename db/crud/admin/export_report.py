@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+import i18n
 from dateutil.tz import tz
 from pydantic import ValidationError
 from pytz import utc
@@ -14,6 +15,7 @@ from db.models import (
     Room, User,
 )
 from loggers import JSONLogger
+from utils.init_i18n import locale_str
 
 logger = JSONLogger("export_report")
 
@@ -67,7 +69,8 @@ class AdminExportReportCRUD(ExportReportCRUD):
                 self.location_model.name.label("location_name"),
                 self.location_model.address.label("location_address"),
                 func.date(self.daily_assignment_model.date).label("assignment_date"),
-                func.array_agg(Room.name).label("rooms")
+                func.array_agg(Room.name).label("rooms"),
+                func.array_agg(ReportRoom.status).label("room_statuses")
                 # <- здесь именно список имён
             )
             .join(self.user_model, Report.user_id == self.user_model.id)
@@ -106,21 +109,27 @@ class AdminExportReportCRUD(ExportReportCRUD):
         rows = result.mappings().all()
 
         processed_rows = []
+        partially: str = locale_str(i18n.t("partially"), params.lang)
         for r in rows:
             row_dict = dict(r)
             if row_dict.get("rooms") is None:
                 row_dict["rooms"] = []
             else:
-                # for room in row_dict["rooms"]:
-                #     if room is None:
-                #         continue
-                #     if room.status == schemas.RoomStatus.partially_done:
-                #         row_dict["rooms"].append(room.join(" (не полностью)"))
-                #     else:
-                #         row_dict["rooms"] = room
+                rooms_with_status = []
+                for room, room_status in zip(
+                        row_dict["rooms"], row_dict["room_statuses"]
+                ):
+                    if room is None:
+                        continue
+                    if room_status == schemas.RoomStatus.partially_done:
+                        rooms_with_status.append(f"{room} {partially}")
+                    else:
+                        rooms_with_status.append(room)
 
-                row_dict["rooms"] = [room for room in row_dict["rooms"]
-                                     if room is not None]
+                row_dict["rooms"] = rooms_with_status
+
+                # row_dict["rooms"] = [room for room in row_dict["rooms"]
+                #                      if room is not None]
 
             processed_rows.append(row_dict)
             processed_rows[-1]["start_time"] = localise_datetime(

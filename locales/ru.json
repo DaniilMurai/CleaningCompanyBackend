@@ -18,6 +18,7 @@
     "not_completed": "Не выполнено",
     "expired": "Просрочено",
     "rooms_not_done": "Комнаты не сделаны",
-    "duration": "Длительность"
+    "duration": "Длительность",
+    "partially": "Частично"
   }
 }

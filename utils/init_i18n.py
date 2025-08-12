@@ -35,6 +35,14 @@ def keys_locale_map(data: dict, locale: str) -> dict:
 LOCALIZABLE_FIELDS = {"status"}
 
 
+def locale_str(data_to_locale: str, locale: str) -> str:
+    init_i18n_once()
+
+    v = i18n.t(data_to_locale, locale=locale)
+    print("value: ", v)
+    return v
+
+
 def locale_export_reports(data: dict, locale: str) -> dict:
     init_i18n_once()
 
