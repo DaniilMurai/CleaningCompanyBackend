@@ -111,6 +111,14 @@ class AdminExportReportCRUD(ExportReportCRUD):
             if row_dict.get("rooms") is None:
                 row_dict["rooms"] = []
             else:
+                # for room in row_dict["rooms"]:
+                #     if room is None:
+                #         continue
+                #     if room.status == schemas.RoomStatus.partially_done:
+                #         row_dict["rooms"].append(room.join(" (не полностью)"))
+                #     else:
+                #         row_dict["rooms"] = room
+
                 row_dict["rooms"] = [room for room in row_dict["rooms"]
                                      if room is not None]
 

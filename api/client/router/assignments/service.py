@@ -133,12 +133,34 @@ class AssignmentService:
                               room_tasks]
         tasks_response = [schemas.TaskResponse.model_validate(t) for t in tasks]
 
+        det_rows = await self.daily_extra_task_crud.get_list_extra_tasks(d.id)
+
+        assigned_tasks_response: list[schemas.DailyExtraTaskResponse] = []
+
+        for det in det_rows:
+            task_obj = det.task or await self.task_crud.get(det.task_id)
+            room_obj = det.room or await self.room_crud.get(det.room_id)
+
+            assigned_tasks_response.append(
+                schemas.DailyExtraTaskResponse(
+                    id=det.id,
+                    task=schemas.TaskResponse.model_validate(
+                        task_obj, from_attributes=True
+                    ),
+                    room=schemas.RoomResponse.model_validate(
+                        room_obj, from_attributes=True
+                    ),
+                    completed=det.completed if hasattr(det, "completed") else None
+                )
+            )
+
         return schemas.DailyAssignmentForUserResponse(
             id=d.id,
             location=location_response,
             rooms=rooms_response,
             room_tasks=room_task_response,
             tasks=tasks_response,
+            assigned_tasks=assigned_tasks_response,
             user_id=d.user_id,
             date=d.date,
             status=d.status,
