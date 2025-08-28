@@ -12,8 +12,8 @@ class DailyAssignmentCRUD(BaseModelCrud[DailyAssignment]):
     report_model = Report
 
     async def get_assignment_and_reports(
-            self, assignments: list[schemas.DailyAssignmentForUserResponse]
-    ) -> list[schemas.AssignmentReportResponse]:
+            self, assignments: list[schemas.DailyAssignmentForUserWithHintsResponse]
+    ) -> list[schemas.AssignmentWithHintsReportResponse]:
         assignment_ids = []
         for a in assignments:
             assignment_ids.append(a.id)
@@ -38,7 +38,7 @@ class DailyAssignmentCRUD(BaseModelCrud[DailyAssignment]):
                 {"assignment": a, "report": reports_map.get(a.id)}
             )
 
-        assignments_reports = [schemas.AssignmentReportResponse.model_validate(
+        assignments_reports = [schemas.AssignmentWithHintsReportResponse.model_validate(
             assignment_report, from_attributes=True
         ) for assignment_report in assignments_reports]
 

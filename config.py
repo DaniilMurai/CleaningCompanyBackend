@@ -20,8 +20,12 @@ class Settings(BaseSettings):
     LOGGER_NAME: str = "neuer-standard"
     LOCALES_PATH: str = "locales"
     OUTPUT_REPORTS_EXPORTS_DIR: str = os.path.join(os.getcwd(), "exports")
+    IMAGES_DIR: str = os.path.join(os.getcwd(), "images")
+    IMAGES_HINTS_DIR: str = os.path.join(IMAGES_DIR, "hints")
+    IMAGES_REPORTS_DIR: str = os.path.join(IMAGES_DIR, "reports")
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
+    BASE_URL: str = "http://192.168.178.39:8000"
 
 
 settings = Settings()

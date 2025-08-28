@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from . import (
-    daily_assignments, daily_extra_tasks, export_reports, locations, reports,
+    daily_assignments, daily_extra_tasks, export_reports, hints, locations, reports,
     room_tasks, rooms, tasks, users,
 )
 
@@ -16,3 +16,4 @@ router.include_router(daily_assignments.router)
 router.include_router(daily_extra_tasks.router)
 router.include_router(reports.router)
 router.include_router(export_reports.router)
+router.include_router(hints.router)

@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, and_
 from sqlalchemy.orm import relationship
 
 from db.base import Base
+from db.models import Hint
 
 
 class Task(Base):
@@ -11,3 +12,7 @@ class Task(Base):
 
     room_tasks = relationship("RoomTask", back_populates="task")
     daily_extra_tasks = relationship("DailyExtraTask", back_populates="task")
+    hints = relationship(
+        "Hint", back_populates="task",
+        primaryjoin=lambda: and_(Hint.task_id == Task.id, Hint.is_deleted == False)
+    )

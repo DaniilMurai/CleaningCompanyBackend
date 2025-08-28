@@ -17,6 +17,14 @@ async def get_tasks(
     return await service.get_list(params)
 
 
+@router.get("/hints")
+async def get_tasks_with_hints(
+        params: Annotated[schemas.AdminGetListParams, Query()],
+        service: AdminTaskService = Depends()
+) -> list[schemas.TaskWithHintsResponse]:
+    return await service.get_task_with_hints(params)
+
+
 @router.post("/")
 async def create_task(
         data: schemas.TaskCreate,

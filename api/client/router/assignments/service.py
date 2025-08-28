@@ -13,7 +13,7 @@ from db.crud.models.location import LocationCRUD
 from db.crud.models.room import RoomCRUD
 from db.crud.models.room_task import RoomTaskCRUD
 from db.crud.models.task import TaskCRUD
-from db.models import DailyAssignment, Location, Report, Room, RoomTask
+from db.models import DailyAssignment, Location, Report, Room, RoomTask, Task
 from utils.benchmark import benchmark
 
 
@@ -75,7 +75,7 @@ class AssignmentService:
     async def get_daily_assignments_and_reports(
             self,
             params: schemas.AssignmentAndReportsParams | None = None
-    ) -> list[schemas.AssignmentReportResponse]:
+    ) -> list[schemas.AssignmentWithHintsReportResponse]:
         dates = params.dates if params.dates else None
         assignments = await self.get_daily_assignments(dates)
         return await self.daily_crud.get_assignment_and_reports(assignments)
@@ -140,7 +140,6 @@ class AssignmentService:
         for det in det_rows:
             task_obj = det.task or await self.task_crud.get(det.task_id)
             room_obj = det.room or await self.room_crud.get(det.room_id)
-
             assigned_tasks_response.append(
                 schemas.DailyExtraTaskResponse(
                     id=det.id,
@@ -173,7 +172,7 @@ class AssignmentService:
     @benchmark
     async def get_daily_assignments(
             self, dates: list[date] | None = None
-    ) -> list[schemas.DailyAssignmentForUserResponse]:
+    ) -> list[schemas.DailyAssignmentForUserWithHintsResponse]:
 
         if dates:
             daily_assignments = (await self.daily_crud.db.execute(
@@ -188,10 +187,10 @@ class AssignmentService:
                     .selectinload(Location.rooms)
                     .selectinload(Room.room_tasks)
                     .selectinload(RoomTask.task)
+                    .selectinload(Task.hints),
                 )
             )).scalars().all()
         else:
-
             daily_assignments = (await self.daily_crud.db.execute(
                 select(DailyAssignment).where(
                     and_(
@@ -203,6 +202,7 @@ class AssignmentService:
                     .selectinload(Location.rooms)
                     .selectinload(Room.room_tasks)
                     .selectinload(RoomTask.task)
+                    .selectinload(Task.hints)
                 )
             )).scalars().all()
 
@@ -227,18 +227,20 @@ class AssignmentService:
                                   room_tasks]
             tasks_response = [schemas.TaskResponse.model_validate(t) for t in tasks]
 
-            det_rows = await self.daily_extra_task_crud.get_list_extra_tasks(d.id)
+            det_rows = await self.daily_extra_task_crud.get_list_extra_tasks_with_hints(
+                d.id
+            )
 
-            assigned_tasks_response: list[schemas.DailyExtraTaskResponse] = []
+            assigned_tasks_response: list[schemas.DailyExtraTaskWithHintsResponse] = []
 
             for det in det_rows:
-                task_obj = det.task or await self.task_crud.get(det.task_id)
+                task_obj = det.task
                 room_obj = det.room or await self.room_crud.get(det.room_id)
 
                 assigned_tasks_response.append(
-                    schemas.DailyExtraTaskResponse(
+                    schemas.DailyExtraTaskWithHintsResponse(
                         id=det.id,
-                        task=schemas.TaskResponse.model_validate(
+                        task=schemas.TaskWithHintsResponse.model_validate(
                             task_obj, from_attributes=True
                         ),
                         room=schemas.RoomResponse.model_validate(
@@ -249,7 +251,7 @@ class AssignmentService:
                 )
 
             result.append(
-                schemas.DailyAssignmentForUserResponse(
+                schemas.DailyAssignmentForUserWithHintsResponse(
                     id=d.id,
                     location=location_response,
                     rooms=rooms_response,

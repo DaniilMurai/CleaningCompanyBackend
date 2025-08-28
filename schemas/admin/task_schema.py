@@ -96,6 +96,13 @@ class TaskResponse(TaskCreate):
     model_config = ConfigDict(from_attributes=True)
 
 
+class TaskWithHintsResponse(TaskCreate):
+    id: int
+
+    hints: list["HintsResponse"]
+    model_config = ConfigDict(from_attributes=True)
+
+
 # class TaskResponse(TaskCreate):
 #     id: int
 #     rooms: list["RoomResponse"] = []
@@ -192,19 +199,27 @@ class AssignmentGroup(BaseModel):
     interval_days: int | None = None
 
 
-class DailyExtraTaskResponse(BaseModel):
+class DailyExtraTaskBase(BaseModel):
     id: int  # id из DailyExtraTask
     task: TaskResponse
     room: RoomResponse
     completed: bool | None = None  # если добавишь в модель
 
 
-class DailyAssignmentForUserResponse(BaseModel):
+class DailyExtraTaskResponse(DailyExtraTaskBase):
+    task: TaskResponse
+
+
+class DailyExtraTaskWithHintsResponse(DailyExtraTaskBase):
+    task: TaskWithHintsResponse
+
+
+class DailyAssignmentForUserBase(BaseModel):
     id: int
     group_uuid: UUID | None = None
     location: LocationResponse
     rooms: list[RoomResponse] = []
-    assigned_tasks: list[DailyExtraTaskResponse] | None = None  # = []
+    # assigned_tasks: list[DailyExtraTaskResponse] | None = None  # = []
     tasks: list[TaskResponse] = []
     room_tasks: list[RoomTaskResponse] = []
     user_id: int
@@ -242,6 +257,14 @@ class DailyAssignmentForUserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class DailyAssignmentForUserResponse(DailyAssignmentForUserBase):
+    assigned_tasks: list[DailyExtraTaskResponse] | None = None  # = []
+
+
+class DailyAssignmentForUserWithHintsResponse(DailyAssignmentForUserBase):
+    assigned_tasks: list[DailyExtraTaskWithHintsResponse] | None = None
+
+
 class DailyExtraTaskCreate(BaseModel):
     daily_assignment_id: int
     room_id: int
@@ -253,6 +276,7 @@ class DailyExtraTaskUpdate(BaseModel):
     room_id: int | None = None
     task_id: int | None = None
 
+
 # class DailyExtraTaskResponse(BaseModel):
 #     id: int
 #     daily_assignment_id: int
@@ -261,3 +285,23 @@ class DailyExtraTaskUpdate(BaseModel):
 #
 #     class Config:
 #         from_attributes = True
+
+
+class HintsCreate(BaseModel):
+    title: str
+    text: str | None = None
+    media_links: list[str] | None = None
+    task_id: int
+
+
+class HintsUpdate(BaseModel):
+    title: str | None = None
+    text: str | None = None
+    media_links: list[str] | None = None
+    task_id: int | None = None
+
+
+class HintsResponse(HintsCreate):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)

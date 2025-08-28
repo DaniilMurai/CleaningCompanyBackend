@@ -38,7 +38,8 @@ class AdminDailyAssignmentCRUD(DailyAssignmentCRUD):
                 )
                 .options(
                     selectinload(DailyAssignment.location),
-                    selectinload(DailyAssignment.user)
+                    selectinload(DailyAssignment.user),
+
                 )
 
             )

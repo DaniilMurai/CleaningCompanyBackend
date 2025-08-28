@@ -37,7 +37,7 @@ async def get_daily_assignment_by_id(
 async def get_daily_assignments_and_reports(
         params: Annotated[schemas.AssignmentAndReportsParams, Query()],
         service: AssignmentService = Depends()
-) -> list[schemas.AssignmentReportResponse]:
+) -> list[schemas.AssignmentWithHintsReportResponse]:
     return await service.get_daily_assignments_and_reports(params)
 
 

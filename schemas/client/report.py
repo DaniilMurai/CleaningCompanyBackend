@@ -6,7 +6,10 @@ from pydantic import BaseModel, ConfigDict, computed_field, field_validator
 
 import exceptions
 import schemas
-from schemas import AdminGetListParams, DailyAssignmentForUserResponse
+from schemas import (
+    AdminGetListParams, DailyAssignmentForUserResponse,
+    DailyAssignmentForUserWithHintsResponse,
+)
 
 
 class AdminReportFilterParams(AdminGetListParams):
@@ -128,6 +131,11 @@ class ReportResponse(TimeValidatedReportBase):
 
 class ReportWithAssignmentDateResponse(ReportResponse):
     assignment_date: Optional[date]
+
+
+class AssignmentWithHintsReportResponse(BaseModel):
+    assignment: DailyAssignmentForUserWithHintsResponse
+    report: ReportResponse | None = None
 
 
 class AssignmentReportResponse(BaseModel):

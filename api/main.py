@@ -1,9 +1,11 @@
 import logging
+import os
 from contextlib import asynccontextmanager
 
 import i18n
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Depends
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 
 import exceptions
@@ -58,10 +60,15 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+os.makedirs(settings.IMAGES_HINTS_DIR, exist_ok=True)
+os.makedirs(settings.IMAGES_REPORTS_DIR, exist_ok=True)
+
 app.mount("/auth", auth.app)
 app.mount("/admin", admin.app)
 app.mount("/users", users.app)
 app.mount("/client", client.app)
+
+app.mount("/images", StaticFiles(directory=settings.IMAGES_DIR), name="images")
 
 app.add_middleware(BaseHTTPMiddleware, dispatch=db_middleware)
 
