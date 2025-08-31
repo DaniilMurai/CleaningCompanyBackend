@@ -179,5 +179,8 @@ cython_debug/
 .idea/*
 logs
 
+images/hints/*
+images/reports/*
+
 
 .DS_store
