@@ -43,15 +43,9 @@ class ReportExportRow(BaseModel):
     location_name: str
     location_address: str | None = None
     assignment_date: date
-
     rooms: list[str] | None = None
-
-    # rooms: list[schemas.ReportRoomResponse] = []
-    #
-    # @computed_field
-    # @property
-    # def failed_rooms(self) -> list[schemas.ReportRoomResponse]:
-    #     return [room for room in self.rooms if room.status != RoomStatus.done]
+    inventory_ending_titles: list[str] | None = []
+    media_links: list[str] | None = []
 
     @model_validator(mode="after")
     def compute_human_time(self):

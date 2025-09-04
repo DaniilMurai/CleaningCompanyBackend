@@ -41,6 +41,8 @@ class ReportsAdapter(ABC):
             row_dict.pop('start_time', None)
             row_dict.pop('end_time', None)
             rooms_str = ", ".join(row.rooms or "")
+            inventories_str = ", ".join(row.inventory_ending_titles or "")
+            media_links = ", ".join(row.media_links or "")
             row_dict = {
                 "id": row.id,
                 "location_name": row.location_name,
@@ -50,7 +52,9 @@ class ReportsAdapter(ABC):
                 "duration": format_duration(row.duration),
                 "status": row.status,
                 "message": row.message,
-                "rooms_not_done": rooms_str
+                "rooms_not_done": rooms_str,
+                "inventory_ending_titles": inventories_str,
+                "media_links": media_links
             }
 
             rows.append(locale_export_reports(row_dict, locale))
