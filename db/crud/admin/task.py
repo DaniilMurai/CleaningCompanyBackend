@@ -1,9 +1,9 @@
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload, with_loader_criteria
+from sqlalchemy.orm import selectinload
 
 import schemas
 from db.crud.models.task import TaskCRUD
-from db.models import Hint, Task
+from db.models import Task
 
 
 class AdminTaskCRUD(TaskCRUD):
@@ -19,7 +19,8 @@ class AdminTaskCRUD(TaskCRUD):
             self.model.is_deleted == False
         ).options(
             selectinload(self.model.hints),
-            with_loader_criteria(Hint, Hint.is_deleted == False)
+            selectinload(self.model.inventory)
+            # with_loader_criteria(Hint, Hint.is_deleted == False)
         )
 
         if params.order_by:

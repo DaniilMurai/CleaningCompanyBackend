@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, and_
 from sqlalchemy.orm import relationship
 
 from db.base import Base
-from db.models import Hint
+from db.models import Hint, Inventory
 
 
 class Task(Base):
@@ -15,4 +15,9 @@ class Task(Base):
     hints = relationship(
         "Hint", back_populates="task",
         primaryjoin=lambda: and_(Hint.task_id == Task.id, Hint.is_deleted == False)
+    )
+    inventory = relationship(
+        "Inventory", back_populates="task", primaryjoin=lambda: and_(
+            Inventory.task_id == Task.id, Inventory.is_deleted == False
+        )
     )

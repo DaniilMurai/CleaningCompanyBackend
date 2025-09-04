@@ -2,6 +2,8 @@ from .daily_assignment import DailyAssignment
 from .daily_extra_task import DailyExtraTask
 from .hint import Hint
 from .init import create_tables
+from .inventory import Inventory
+from .inventory_user import InventoryUser
 from .location import Location
 from .report import Report
 from .report_room import ReportRoom

@@ -10,7 +10,7 @@ from config import settings
 
 async def convert_base64_to_server_link(
         base64_links: list[str],
-        path: Literal["hints", "reports"]
+        path: Literal["hints", "reports", "inventories"]
 ) -> list[str]:
     file_urls = []
 
@@ -29,11 +29,7 @@ async def convert_base64_to_server_link(
         ext = header.split("/")[1].split(";")[0]
         unique_name = f"{uuid.uuid4()}.{ext}"
 
-        # Путь, зависящий от типа
-        if path == "hints":
-            dir_path = settings.IMAGES_HINTS_DIR
-        else:
-            dir_path = settings.IMAGES_REPORTS_DIR
+        dir_path = os.path.join(settings.IMAGES_DIR, path)
 
         file_path = os.path.join(dir_path, unique_name)
 

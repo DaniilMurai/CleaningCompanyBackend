@@ -54,7 +54,7 @@ async def update_daily_assignment(
         assignment_id: int,
         data: schemas.DailyAssignmentForUserUpdate,
         service: AssignmentService = Depends()
-) -> schemas.DailyAssignmentForUserResponse:
+) -> schemas.DailyAssignmentForUserWithHintsResponse:
     return await service.update_daily_assignment(assignment_id, data)
 
 

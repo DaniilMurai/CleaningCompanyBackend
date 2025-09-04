@@ -181,6 +181,7 @@ logs
 
 images/hints/*
 images/reports/*
+images/inventories/*
 
 
 .DS_store

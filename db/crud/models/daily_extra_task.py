@@ -39,6 +39,7 @@ class DailyExtraTaskCRUD(BaseModelCrud[DailyExtraTask]):
             .options(
                 selectinload(DailyExtraTask.room),
                 selectinload(DailyExtraTask.task).selectinload(Task.hints),
+                selectinload(DailyExtraTask.task).selectinload(Task.inventory)
 
             )
         )

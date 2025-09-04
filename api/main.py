@@ -62,6 +62,7 @@ app.add_middleware(
 
 os.makedirs(settings.IMAGES_HINTS_DIR, exist_ok=True)
 os.makedirs(settings.IMAGES_REPORTS_DIR, exist_ok=True)
+os.makedirs(os.path.join(settings.IMAGES_REPORTS_DIR, "inventories"), exist_ok=True)
 
 app.mount("/auth", auth.app)
 app.mount("/admin", admin.app)

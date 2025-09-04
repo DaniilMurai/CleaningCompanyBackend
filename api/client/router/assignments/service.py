@@ -14,6 +14,7 @@ from db.crud.models.room import RoomCRUD
 from db.crud.models.room_task import RoomTaskCRUD
 from db.crud.models.task import TaskCRUD
 from db.models import DailyAssignment, Location, Report, Room, RoomTask, Task
+from schemas import DailyAssignmentForUserWithHintsResponse
 from utils.benchmark import benchmark
 
 
@@ -82,7 +83,15 @@ class AssignmentService:
 
     async def update_daily_assignment(
             self, assignment_id: int, data: schemas.DailyAssignmentForUserUpdate
-    ) -> schemas.DailyAssignmentForUserResponse:
+    ) -> DailyAssignmentForUserWithHintsResponse:
+
+        # daily_assignment = await self.daily_crud.db.execute(
+        #     select(DailyAssignment).where(DailyAssignment.id ==
+        #     assignment_id).options(
+        #         selectinload(DailyAssignment)
+        #     )
+        # )
+
         daily_assignment_orm = await self.daily_crud.get(
             id=assignment_id, user_id=self.user.id
         )
@@ -91,35 +100,48 @@ class AssignmentService:
         data_to_update = data.model_dump(exclude_unset=True)
         await self.daily_crud.update(daily_assignment_orm, data_to_update)
 
-        return await self.get_daily_assignment_by_id(assignment_id)
+        result = await self.get_daily_assignment_by_id_with_hints(assignment_id)
+        print("!!!result!!!: ", result)
+        return result
 
-    @benchmark
-    async def get_daily_assignment_by_id(
-            self, assignment_id: int
-    ) -> schemas.DailyAssignmentForUserResponse:
+    async def _get_daily_assignment_base(
+            self, assignment_id: int, with_hints: bool = False
+    ):
+        """Базовый метод для получения daily assignment"""
+        query = select(DailyAssignment).where(
+            DailyAssignment.id == assignment_id,
+            DailyAssignment.is_deleted == False
+        )
 
-        d = (await self.daily_crud.db.execute(
-            select(DailyAssignment)
-            .where(
-                DailyAssignment.id == assignment_id,
-                DailyAssignment.is_deleted == False
-            ).options(
-                selectinload(DailyAssignment.location)
-                .selectinload(Location.rooms)
-                .selectinload(Room.room_tasks)
-                .selectinload(RoomTask.task)
-            )
-        )).scalars().one_or_none()
+        # Добавляем загрузку hints только если нужно
+        load_options = (
+            selectinload(DailyAssignment.location)
+            .selectinload(Location.rooms)
+            .selectinload(Room.room_tasks)
+            .selectinload(RoomTask.task)
+        )
+
+        if with_hints:
+            load_options = load_options.selectinload(Task.hints)
+
+        query = query.options(load_options)
+
+        d = (await self.daily_crud.db.execute(query)).scalars().one_or_none()
 
         if not d:
             raise exceptions.ObjectNotFoundByIdError(
                 "daily_assignment from user id", self.user.id
             )
 
-        location_response = d.location
-        rooms = d.location.rooms
+        return d
+
+    @staticmethod
+    async def _process_location_data(location):
+        """Обработка данных локации, комнат и задач"""
+        rooms = location.rooms
         room_tasks = []
         tasks_dict = {}
+
         for r in rooms:
             for rt in r.room_tasks:
                 room_tasks.append(rt)
@@ -128,24 +150,42 @@ class AssignmentService:
         tasks = list(tasks_dict.values())
 
         rooms_response = [schemas.RoomResponse.model_validate(r) for r in rooms]
-        room_task_response = [schemas.RoomTaskResponse.model_validate(rt) for rt
-                              in
+        room_task_response = [schemas.RoomTaskResponse.model_validate(rt) for rt in
                               room_tasks]
         tasks_response = [schemas.TaskResponse.model_validate(t) for t in tasks]
 
-        det_rows = await self.daily_extra_task_crud.get_list_extra_tasks(d.id)
+        return rooms_response, room_task_response, tasks_response
 
-        assigned_tasks_response: list[schemas.DailyExtraTaskResponse] = []
+    async def _process_extra_tasks(self, assignment_id, with_hints: bool = False):
+        """Обработка дополнительных задач"""
+        if with_hints:
+            det_rows = await self.daily_extra_task_crud.get_list_extra_tasks_with_hints(
+                assignment_id
+            )
+        else:
+            det_rows = await self.daily_extra_task_crud.get_list_extra_tasks(
+                assignment_id
+            )
+
+        assigned_tasks_response = []
 
         for det in det_rows:
-            task_obj = det.task or await self.task_crud.get(det.task_id)
+            task_obj = det.task or (await self.task_crud.get(
+                det.task_id
+            ) if not with_hints else det.task)
             room_obj = det.room or await self.room_crud.get(det.room_id)
+
+            if with_hints:
+                task_schema = schemas.TaskWithHintsResponse
+                response_schema = schemas.DailyExtraTaskWithHintsResponse
+            else:
+                task_schema = schemas.TaskResponse
+                response_schema = schemas.DailyExtraTaskResponse
+
             assigned_tasks_response.append(
-                schemas.DailyExtraTaskResponse(
+                response_schema(
                     id=det.id,
-                    task=schemas.TaskResponse.model_validate(
-                        task_obj, from_attributes=True
-                    ),
+                    task=task_schema.model_validate(task_obj, from_attributes=True),
                     room=schemas.RoomResponse.model_validate(
                         room_obj, from_attributes=True
                     ),
@@ -153,7 +193,20 @@ class AssignmentService:
                 )
             )
 
-        return schemas.DailyAssignmentForUserResponse(
+        return assigned_tasks_response
+
+    async def _build_response(
+            self, d, location_response, rooms_response,
+            room_task_response, tasks_response,
+            assigned_tasks_response, with_hints: bool = False
+    ):
+        """Построение финального ответа"""
+        if with_hints:
+            response_schema = schemas.DailyAssignmentForUserWithHintsResponse
+        else:
+            response_schema = schemas.DailyAssignmentForUserResponse
+
+        return response_schema(
             id=d.id,
             location=location_response,
             rooms=rooms_response,
@@ -170,85 +223,72 @@ class AssignmentService:
         )
 
     @benchmark
-    async def get_daily_assignments(
-            self, dates: list[date] | None = None
-    ) -> list[schemas.DailyAssignmentForUserWithHintsResponse]:
+    async def get_daily_assignment_by_id_with_hints(self, assignment_id: int):
+        d = await self._get_daily_assignment_base(assignment_id, with_hints=True)
+        location_response = d.location
+        rooms_response, room_task_response, tasks_response = await (
+            self._process_location_data(
+                d.location
+            ))
+        assigned_tasks_response = await self._process_extra_tasks(
+            d.id, with_hints=True
+        )
 
+        return await self._build_response(
+            d, location_response, rooms_response, room_task_response,
+            tasks_response, assigned_tasks_response, with_hints=True
+        )
+
+    @benchmark
+    async def get_daily_assignment_by_id(self, assignment_id: int):
+        d = await self._get_daily_assignment_base(assignment_id, with_hints=False)
+        location_response = d.location
+        rooms_response, room_task_response, tasks_response = await (
+            self._process_location_data(
+                d.location
+            ))
+        assigned_tasks_response = await self._process_extra_tasks(
+            d.id, with_hints=False
+        )
+
+        return await self._build_response(
+            d, location_response, rooms_response, room_task_response,
+            tasks_response, assigned_tasks_response, with_hints=False
+        )
+
+    @benchmark
+    async def get_daily_assignments(self, dates: list[date] | None = None):
+        # Базовый запрос
+        query = select(DailyAssignment).where(
+            and_(
+                DailyAssignment.is_deleted == False,
+                DailyAssignment.user_id == self.user.id
+            )
+        ).options(
+            selectinload(DailyAssignment.location)
+            .selectinload(Location.rooms)
+            .selectinload(Room.room_tasks)
+            .selectinload(RoomTask.task)
+            .selectinload(Task.hints)
+        )
+
+        # Добавляем фильтр по датам если нужно
         if dates:
-            daily_assignments = (await self.daily_crud.db.execute(
-                select(DailyAssignment).where(
-                    and_(
-                        DailyAssignment.is_deleted == False,
-                        func.date(DailyAssignment.date).in_(dates),
-                        DailyAssignment.user_id == self.user.id
-                    )
-                ).options(
-                    selectinload(DailyAssignment.location)
-                    .selectinload(Location.rooms)
-                    .selectinload(Room.room_tasks)
-                    .selectinload(RoomTask.task)
-                    .selectinload(Task.hints),
-                )
-            )).scalars().all()
-        else:
-            daily_assignments = (await self.daily_crud.db.execute(
-                select(DailyAssignment).where(
-                    and_(
-                        DailyAssignment.is_deleted == False,
-                        DailyAssignment.user_id == self.user.id
-                    )
-                ).options(
-                    selectinload(DailyAssignment.location)
-                    .selectinload(Location.rooms)
-                    .selectinload(Room.room_tasks)
-                    .selectinload(RoomTask.task)
-                    .selectinload(Task.hints)
-                )
-            )).scalars().all()
+            query = query.where(func.date(DailyAssignment.date).in_(dates))
+
+        daily_assignments = (
+            await self.daily_crud.db.execute(query)).scalars().all()
 
         result = []
-
         for d in daily_assignments:
             location_response = d.location
-
-            rooms = d.location.rooms
-            room_tasks = []
-            tasks_dict = {}
-            for r in rooms:
-                for rt in r.room_tasks:
-                    room_tasks.append(rt)
-                    tasks_dict[rt.task_id] = rt.task
-
-            tasks = list(tasks_dict.values())
-
-            rooms_response = [schemas.RoomResponse.model_validate(r) for r in rooms]
-            room_task_response = [schemas.RoomTaskResponse.model_validate(rt) for rt
-                                  in
-                                  room_tasks]
-            tasks_response = [schemas.TaskResponse.model_validate(t) for t in tasks]
-
-            det_rows = await self.daily_extra_task_crud.get_list_extra_tasks_with_hints(
-                d.id
+            rooms_response, room_task_response, tasks_response = await (
+                self._process_location_data(
+                    d.location
+                ))
+            assigned_tasks_response = await self._process_extra_tasks(
+                d.id, with_hints=True
             )
-
-            assigned_tasks_response: list[schemas.DailyExtraTaskWithHintsResponse] = []
-
-            for det in det_rows:
-                task_obj = det.task
-                room_obj = det.room or await self.room_crud.get(det.room_id)
-
-                assigned_tasks_response.append(
-                    schemas.DailyExtraTaskWithHintsResponse(
-                        id=det.id,
-                        task=schemas.TaskWithHintsResponse.model_validate(
-                            task_obj, from_attributes=True
-                        ),
-                        room=schemas.RoomResponse.model_validate(
-                            room_obj, from_attributes=True
-                        ),
-                        completed=det.completed if hasattr(det, "completed") else None
-                    )
-                )
 
             result.append(
                 schemas.DailyAssignmentForUserWithHintsResponse(

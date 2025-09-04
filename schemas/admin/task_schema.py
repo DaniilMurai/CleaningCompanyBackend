@@ -99,6 +99,7 @@ class TaskResponse(TaskCreate):
 class TaskWithHintsResponse(TaskCreate):
     id: int
 
+    inventory: list["InventoryResponse"]
     hints: list["HintsResponse"]
     model_config = ConfigDict(from_attributes=True)
 
@@ -121,7 +122,9 @@ class RoomTaskCreate(BaseRoomTask):
 
 
 class RoomTaskUpdate(BaseRoomTask):
-    __annotations__ = {k: Optional[v] for k, v in BaseRoomTask.__annotations__.items()}
+    room_id: int | None = None
+    task_id: int | None = None
+
     times_since_done: int | None = None
 
 
@@ -302,6 +305,41 @@ class HintsUpdate(BaseModel):
 
 
 class HintsResponse(HintsCreate):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class InventoryCreate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    media_links: list[str] | None = None
+    task_id: int
+
+
+class InventoryUpdate(InventoryCreate):
+    pass
+
+
+class InventoryResponse(InventoryCreate):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class InventoryUserCreate(BaseModel):
+    inventory_id: int
+    user_id: int
+    ending: bool | None = None
+
+
+class InventoryUserUpdate(BaseModel):
+    inventory_id: int | None = None
+    user_id: int | None = None
+    ending: bool | None = None
+
+
+class InventoryUserResponse(InventoryUserCreate):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
