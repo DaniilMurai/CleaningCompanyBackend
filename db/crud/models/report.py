@@ -1,11 +1,11 @@
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload, selectinload
 
 import exceptions
 import schemas
 from db.crud.models.base import BaseModelCrud
-from db.models import DailyAssignment, Location, Report, ReportRoom, User
+from db.models import DailyAssignment, InventoryUser, Location, Report, ReportRoom, User
 
 
 class ReportCRUD(BaseModelCrud[Report]):
@@ -61,6 +61,10 @@ class ReportCRUD(BaseModelCrud[Report]):
             for rr in report.report_rooms or []
         ]
 
+        inventory_ending_titles = [
+            iu.inventory.title for iu in report.inventory_users or []
+        ]
+
         return schemas.ReportWithAssignmentDateResponse.model_validate(
             {
                 "id": report.id,
@@ -83,12 +87,13 @@ class ReportCRUD(BaseModelCrud[Report]):
                 "status": report.status,
                 "start_time": report.start_time,
                 "end_time": report.end_time,
+                "inventory_ending_titles": inventory_ending_titles
             }
         )
 
     async def create_report(self, data: schemas.CreateReport) -> schemas.ReportResponse:
         try:
-            report_data = data.model_dump(exclude={"report_rooms"})
+            report_data = data.model_dump(exclude={"report_rooms", "inventory_users"})
             report = Report(**report_data)
 
             self.db.add(report)
@@ -114,6 +119,16 @@ class ReportCRUD(BaseModelCrud[Report]):
             report.status = data.status
             assignment.status = data.status
 
+            if data.inventory_users is not None:
+                inventory_users = []
+                for inv_user in data.inventory_users:
+                    inventory_user = InventoryUser(
+                        report_id=report.id, **inv_user.model_dump()
+                    )
+                    inventory_users.append(inventory_user)
+
+                self.db.add_all(inventory_users)
+
             await self.db.commit()
             report = await self.db.scalar(
                 select(Report).options(
@@ -133,15 +148,15 @@ class ReportCRUD(BaseModelCrud[Report]):
             await self.db.rollback()
             raise exceptions.ErrorDuringReportCreate({"error: ": e})
 
-    async def change_status(self, report_id: int, status: schemas.AssignmentStatus):
-        report = await self.get(report_id)
-        report.status = status
-
-        response = await self.db.execute(
-            update(DailyAssignment)
-            .where(
-                DailyAssignment.id == report.daily_assignment_id
-            )
-            .values(status=status)
-        )
-        return schemas.ReportResponse.model_validate(report)
+    # async def change_status(self, report_id: int, status: schemas.AssignmentStatus):
+    #     report = await self.get(report_id)
+    #     report.status = status
+    #
+    #     response = await self.db.execute(
+    #         update(DailyAssignment)
+    #         .where(
+    #             DailyAssignment.id == report.daily_assignment_id
+    #         )
+    #         .values(status=status)
+    #     )
+    #     return schemas.ReportResponse.model_validate(report)

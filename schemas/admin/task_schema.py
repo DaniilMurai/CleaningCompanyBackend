@@ -330,12 +330,14 @@ class InventoryResponse(InventoryCreate):
 class InventoryUserCreate(BaseModel):
     inventory_id: int
     user_id: int
+    # report_id: int
     ending: bool | None = None
 
 
 class InventoryUserUpdate(BaseModel):
     inventory_id: int | None = None
     user_id: int | None = None
+    report_id: int | None = None
     ending: bool | None = None
 
 

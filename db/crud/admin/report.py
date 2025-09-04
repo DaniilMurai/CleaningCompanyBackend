@@ -1,8 +1,9 @@
 from sqlalchemy import and_, or_, select
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import joinedload, selectinload, with_loader_criteria
 
 import schemas
 from db.crud.models.report import ReportCRUD
+from db.models import InventoryUser
 
 
 class AdminReportCRUD(ReportCRUD):
@@ -40,7 +41,11 @@ class AdminReportCRUD(ReportCRUD):
             joinedload(self.model.user),
             joinedload(self.model.daily_assignment).joinedload(
                 self.daily_assignment_model.location
-            )
+            ),
+            selectinload(self.model.inventory_users).selectinload(
+                InventoryUser.inventory
+            ),
+            with_loader_criteria(InventoryUser, InventoryUser.ending == True)
         )
 
         if params.order_by:

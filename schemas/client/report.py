@@ -59,7 +59,7 @@ class ReportBase(TimeValidatedReportBase):
 
 class CreateReport(ReportBase):
     report_rooms: Optional[list[ReportRoomRequest]] = None
-    pass
+    inventory_users: Optional[list["schemas.InventoryUserCreate"]] = None
 
 
 class UpdateReport(BaseModel):
@@ -131,6 +131,7 @@ class ReportResponse(TimeValidatedReportBase):
 
 class ReportWithAssignmentDateResponse(ReportResponse):
     assignment_date: Optional[date]
+    inventory_ending_titles: Optional[list[str]] = None
 
 
 class AssignmentWithHintsReportResponse(BaseModel):

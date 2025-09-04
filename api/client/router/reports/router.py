@@ -24,11 +24,10 @@ async def create_report(
 ) -> schemas.ReportResponse:
     return await service.create_report(data)
 
-
-@router.patch("/")
-async def update_report(
-        report_id: int,
-        data: schemas.UpdateReport,
-        service: ReportService = Depends()
-) -> schemas.ReportResponse:
-    return await service.update_report(report_id, data)
+# @router.patch("/")
+# async def update_report(
+#         report_id: int,
+#         data: schemas.UpdateReport,
+#         service: ReportService = Depends()
+# ) -> schemas.ReportResponse:
+#     return await service.update_report(report_id, data)
