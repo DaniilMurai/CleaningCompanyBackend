@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   neuer-standard-api:
+    container_name: neuer-standart-api
     image: ghcr.io/daniilmurai/neuer-standard-api:latest
     env_file: .env
     depends_on:
@@ -13,6 +14,7 @@ services:
       - exports:/app/exports
 
   neuer-standard-worker:
+    container_name: neuer-standart-worker
     image: ghcr.io/daniilmurai/neuer-standard-worker:latest
     env_file: .env
     depends_on:
