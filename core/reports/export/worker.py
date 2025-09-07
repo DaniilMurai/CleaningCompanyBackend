@@ -39,7 +39,7 @@ async def export_report_worker():
                 await service.set_export_report_status(
                     report, schemas.ReportStatus.in_progress
                 )
-                # redis
+
                 await redis.publish("export_report", "status_update")
 
                 data = {

@@ -83,9 +83,10 @@ class AdminExportReportService(
         async def event_generator():
             try:
                 async for message in pubsub.listen():
-                    data = json.dumps(message)
-                    logger.info(data)
-                    yield f"data: {data}\n\n"
+                    if message['type'] == "message":
+                        data = json.dumps(message)
+                        logger.info(data)
+                        yield f"data: {data}\n\n"
             except Exception as e:
                 logger.error("An error occurred while handling redis messages: ", e)
             finally:
