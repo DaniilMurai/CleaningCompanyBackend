@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
     BASE_URL: str = "http://192.168.178.39:8000"
+    TELEGRAM_BOT_TOKEN: str
+    CHAT_ID: str
 
 
 settings = Settings()

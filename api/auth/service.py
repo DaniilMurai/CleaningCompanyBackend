@@ -1,8 +1,10 @@
+import httpx
 from fastapi import HTTPException
 from jose import JWTError
 from starlette import status
 
 import schemas
+from config import settings
 from db.crud import UserCRUD
 from db.models import User
 from utils.password import get_password_hash, verify_password
@@ -54,7 +56,7 @@ class AuthService:
             )
 
         user = await self.crud.get(user_id)
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -112,3 +114,42 @@ class AuthService:
             )
 
         return self.get_tokens_pair(user)
+
+    async def request_access(
+            self, data: schemas.RequestAccessCreate, parse_mode: str = "Markdown"
+    ) -> schemas.SuccessResponse:
+
+        bot_token = settings.TELEGRAM_BOT_TOKEN
+        chat_id = settings.CHAT_ID
+
+        message = self.format_request_message(data.model_dump())
+
+        payload = {
+            "chat_id": chat_id,
+            "text": message,
+            "parse_mode": parse_mode
+        }
+
+        telegram_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            try:
+                response = await client.post(telegram_url, json=payload)
+                response.raise_for_status()
+                return schemas.SuccessResponse(success=True)
+            except httpx.HTTPError as e:
+                raise Exception(f"Ошибка при отправке в телеграмм: {str(e)}")
+
+    @staticmethod
+    def format_request_message(data: dict) -> str:
+
+        message = f"""
+🆕 **Новый запрос на доступ**
+
+👤 **Имя:** {data['full_name']}
+📧 **Email:** {data['email']}
+📞 **Телефон:** {data['phone_number']}
+💬 **Сообщение:** {data.get('message', 'Не указано')}
+
+        """.strip()
+
+        return message

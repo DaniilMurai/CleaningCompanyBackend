@@ -36,3 +36,11 @@ async def forget_password(
         service: AuthService = Depends()
 ) -> schemas.TokenPair:
     return await service.forget_password(data)
+
+
+@router.post("/request-access")
+async def request_access(
+        data: schemas.RequestAccessCreate,
+        service: AuthService = Depends()
+) -> schemas.SuccessResponse:
+    return await service.request_access(data)

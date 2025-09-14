@@ -32,3 +32,10 @@ class RefreshTokenData(BaseModel):
 class ForgetPasswordData(BaseModel):
     password: str
     token: str
+
+
+class RequestAccessCreate(BaseModel):
+    full_name: str
+    email: str
+    phone_number: str
+    message: Optional[str] = None
