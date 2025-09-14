@@ -183,5 +183,7 @@ images/hints/*
 images/reports/*
 images/inventories/*
 
+images/
+
 
 .DS_store
