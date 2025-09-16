@@ -11,6 +11,7 @@ services:
       - mainnet
     volumes:
       - exports:/app/exports
+      - images:/app/images
 
   neuer-standard-worker:
     image: ghcr.io/daniilmurai/neuer-standard-worker:latest
@@ -22,6 +23,7 @@ services:
       - mainnet
     volumes:
       - exports:/app/exports
+      - images:/app/images
 
   neuer-standard-db:
     image: postgres:15
@@ -42,6 +44,7 @@ services:
 volumes:
   pgdata:
   exports:
+  images:
 
 networks:
   mainnet:
