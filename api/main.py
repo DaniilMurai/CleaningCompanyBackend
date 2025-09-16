@@ -78,7 +78,7 @@ register_general_exception_handlers(app)
 
 @app.get("/")
 async def root(lang: str = Depends(get_lang)) -> dict[str, str]:
-    return {"message": i18n.t("hello world!", locale=lang)}
+    return {"message": i18n.t("hello world", locale=lang)}
 
 
 @app.post("/error")
