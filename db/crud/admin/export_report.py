@@ -48,6 +48,20 @@ class AdminExportReportCRUD(ExportReportCRUD):
     location_model = Location
     daily_assignment_model = DailyAssignment
 
+    async def check_if_reports_exists(self, params: schemas.ReportExportParams) -> bool:
+        conditions = [
+            func.date(Report.start_time) >= params.start_date,
+            func.date(Report.end_time) <= params.end_date
+        ]
+        if params.user_id:
+            conditions.append(
+                Report.user_id == params.user_id
+            )
+
+        return (await self.db.execute(
+            select(func.exists(select(Report.id))).where(and_(*conditions))
+        )).scalar()
+
     async def get_reports_by_date(self, params: schemas.ReportExportParams) -> list[
         schemas.ReportExportRow]:
         conditions = [

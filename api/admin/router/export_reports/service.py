@@ -27,6 +27,9 @@ class AdminExportReportService(
     crud_cls = AdminExportReportCRUD
 
     async def export_reports(self, params: schemas.ReportExportParams) -> int:
+        if not await self.crud.check_if_reports_exists(params):
+            raise exceptions.ObjectsNotFoundByIdsError("reports for user(s)", [])
+
         export_report = await self.crud.create(params.model_dump(exclude_unset=True))
 
         return export_report.id

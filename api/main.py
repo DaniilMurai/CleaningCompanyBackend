@@ -57,7 +57,7 @@ app.add_middleware(
     ],
     allow_methods=["*"],
     allow_credentials=True,
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
 os.makedirs(settings.IMAGES_HINTS_DIR, exist_ok=True)
